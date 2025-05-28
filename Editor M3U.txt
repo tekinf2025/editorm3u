@@ -1,0 +1,31 @@
+Crie um site de importação e edição de uma lista m3u
+<title>EditStream - Tekinformática</title>
+<link rel="icon" href="https://i.imgur.com/3Dz8KBM.png">
+background: linear-gradient, 'https://i.imgur.com/zJzb34E.jpeg' e coloque um fundo escuro para uma melhor vizualização
+Titulo: EditorStream - Tekinformática
+Aplicativo RTv, Servidor, Conta Criada em 2021, Este servidor tem mais de 150 mil conteúdos entre canais, filmes e séries.
+Vídeo demonstrativo RTv, D:\Downloads\Camtasia_Videos\RTv\DemonstracaDoaplicativoRTv.mp4
+PlaylistTab, Biblioteca
+linksTab,Links Importados
+adicione uma funcionalidade de ordenação alfabética
+ao importar uma lista m3u quando fizer um filtro queria ver somente na sessão Links Importados o que foi filtrado na Biblioteca
+A sessão Importar Lista M3U mova ela mais para a esquerda e aumente mais a largura da sessão Biblioteca
+Na sessão Links Importados preciso que apareça o link por completo e adicione um botão de copiar Link
+Preciso de uma função Editar links em massa
+Na sessão Links Importados preciso que oculte a coluna grupo e deixe somente o titulo e link visivél
+
+Exemplo:
+tvg-name="De Repente Pai [L]"
+tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/4iviSGM2KWEUDhU4m8ujyN9MI6K.jpg"
+group-title="Filmes | Legendados"
+Nome, De Repente Pai [L], http://rootdns.fun/movie/Wsht2023/3292.mp4
+
+http://79.127.243.148:80
+http://rootdns.fun
+
+https://image.tmdb.org/t/p/w600_and_h900_bestv2/fz3RPQPquiyb4xi0isCIf6lIx7F.jpg
+https://image.tmdb.org/t/p/w600_and_h900_bestv2/9MMff1YtsR8ynuB5KXZYKLZA3Xo.jpg     A Qualquer Custo [L] , A Morte Te Dá Parabéns [L]
+
+Ficou ótimo todas as funções funcionando, quero na função Editar Links em Massa modificar os links da logo, só tem as opções Nomes, Links, Grupos, poderia acrescetar a Opção Logo
+
+

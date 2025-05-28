@@ -1,0 +1,687 @@
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EditStream - Tekinformática</title>
+    <link rel="icon" href="https://i.imgur.com/3Dz8KBM.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), url('https://i.imgur.com/zJzb34E.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        
+        .glass {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+        
+        .tab-active {
+            background: rgba(59, 130, 246, 0.3);
+            border-bottom: 3px solid #3b82f6;
+        }
+        
+        .playlist-item:hover {
+            background: rgba(30, 41, 59, 0.7);
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.7);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+        
+        .logo-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        input, select, textarea {
+            background-color: rgba(15, 23, 42, 0.7) !important;
+            border-color: rgba(59, 130, 246, 0.3) !important;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: rgba(59, 130, 246, 0.7) !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="glass p-6 mb-8 flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center mb-4 md:mb-0">
+                <img src="https://i.imgur.com/3Dz8KBM.png" alt="Tekinformática Logo" class="w-12 h-12 mr-4 logo-pulse">
+                <div>
+                    <h1 class="text-3xl font-bold">EditorStream - Tekinformática</h1>
+                    <p class="text-blue-300">Aplicativo RTv, Servidor, Conta Criada em 2021</p>
+                </div>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-blue-300">Este servidor tem mais de 150 mil conteúdos</p>
+                <p class="text-blue-300">entre canais, filmes e séries.</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Left Column - Video and Import -->
+            <div class="w-full lg:w-1/3">
+                <div class="glass p-6 mb-8">
+                    <h2 class="text-xl font-bold mb-4">Vídeo Demonstrativo RTv</h2>
+                    <div class="aspect-video bg-slate-900 rounded-lg flex items-center justify-center mb-4">
+                        <div class="text-center p-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="mt-4">Demonstração do aplicativo RTv</p>
+                            <p class="text-sm text-blue-300">(Vídeo não disponível nesta versão web)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-6">
+                    <h2 class="text-xl font-bold mb-4">Importar Lista M3U</h2>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">URL da Lista M3U</label>
+                        <input type="text" id="m3u-url" placeholder="https://exemplo.com/lista.m3u" class="w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Ou Carregar Arquivo</label>
+                        <label class="flex items-center justify-center w-full p-3 rounded-lg bg-slate-800/80 border border-blue-500/30 border-dashed cursor-pointer hover:bg-slate-700/80 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            <span>Selecionar arquivo M3U</span>
+                            <input type="file" id="m3u-file" accept=".m3u,.m3u8" class="hidden">
+                        </label>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Ou Colar Conteúdo</label>
+                        <textarea id="m3u-content" rows="5" placeholder="#EXTINF:-1 tvg-name=&quot;Exemplo&quot;..." class="w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <button id="import-btn" class="w-full btn-primary py-3 px-4 rounded-lg font-medium">Importar Lista</button>
+                </div>
+            </div>
+
+            <!-- Right Column - Playlist Management -->
+            <div class="w-full lg:w-2/3">
+                <div class="glass p-6">
+                    <!-- Tabs -->
+                    <div class="flex mb-6 border-b border-blue-500/20">
+                        <button id="playlist-tab" class="tab-active px-4 py-3 font-medium">Biblioteca</button>
+                        <button id="links-tab" class="px-4 py-3 font-medium">Links Importados</button>
+                    </div>
+
+                    <!-- Search and Filter -->
+                    <div class="flex flex-col md:flex-row gap-4 mb-6">
+                        <div class="flex-grow">
+                            <input type="text" id="search-input" placeholder="Buscar por nome, grupo..." class="w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="filter-group" class="p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todos os grupos</option>
+                            </select>
+                            <button id="add-new-btn" class="btn-primary py-3 px-4 rounded-lg font-medium">Adicionar Novo</button>
+                        </div>
+                    </div>
+
+                    <!-- Playlist Content -->
+                    <div id="playlist-content" class="custom-scrollbar max-h-[500px] overflow-y-auto">
+                        <div class="text-center py-8 text-blue-300">
+                            Importe uma lista M3U para começar
+                        </div>
+                    </div>
+
+                    <!-- Links Content (Hidden by default) -->
+                    <div id="links-content" class="custom-scrollbar max-h-[500px] overflow-y-auto hidden">
+                        <div class="text-center py-8 text-blue-300">
+                            Importe uma lista M3U para visualizar os links
+                        </div>
+                    </div>
+
+                    <!-- Export Options -->
+                    <div class="mt-6 pt-6 border-t border-blue-500/20">
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <button id="export-btn" class="btn-primary py-3 px-4 rounded-lg font-medium flex-1" disabled>
+                                <span class="flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Exportar Lista
+                                </span>
+                            </button>
+                            <button id="clear-btn" class="btn-danger py-3 px-4 rounded-lg font-medium flex-1" disabled>
+                                <span class="flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Limpar Tudo
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
+        <div class="glass p-6 rounded-lg w-full max-w-2xl mx-4">
+            <h2 id="modal-title" class="text-2xl font-bold mb-4">Editar Item</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Nome</label>
+                    <input type="text" id="edit-name" class="w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Grupo</label>
+                    <input type="text" id="edit-group" class="w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Logo URL</label>
+                    <input type="text" id="edit-logo" class="w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-2">URL do Stream</label>
+                    <input type="text" id="edit-url" class="w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button id="modal-cancel" class="py-2 px-4 rounded-lg bg-slate-700 hover:bg-slate-600 transition">Cancelar</button>
+                <button id="modal-save" class="btn-primary py-2 px-4 rounded-lg">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let playlistItems = [];
+        let currentEditIndex = -1;
+        let activeTab = 'playlist';
+        let currentSearchTerm = '';
+        let currentSelectedGroup = '';
+
+        // DOM Elements
+        const playlistTab = document.getElementById('playlist-tab');
+        const linksTab = document.getElementById('links-tab');
+        const playlistContent = document.getElementById('playlist-content');
+        const linksContent = document.getElementById('links-content');
+        const searchInput = document.getElementById('search-input');
+        const filterGroup = document.getElementById('filter-group');
+        const importBtn = document.getElementById('import-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const addNewBtn = document.getElementById('add-new-btn');
+        const m3uFile = document.getElementById('m3u-file');
+        const m3uUrl = document.getElementById('m3u-url');
+        const m3uContent = document.getElementById('m3u-content');
+        const editModal = document.getElementById('edit-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const editName = document.getElementById('edit-name');
+        const editGroup = document.getElementById('edit-group');
+        const editLogo = document.getElementById('edit-logo');
+        const editUrl = document.getElementById('edit-url');
+        const modalCancel = document.getElementById('modal-cancel');
+        const modalSave = document.getElementById('modal-save');
+
+        // Tab switching
+        playlistTab.addEventListener('click', () => {
+            activeTab = 'playlist';
+            playlistTab.classList.add('tab-active');
+            linksTab.classList.remove('tab-active');
+            playlistContent.classList.remove('hidden');
+            linksContent.classList.add('hidden');
+        });
+
+        linksTab.addEventListener('click', () => {
+            activeTab = 'links';
+            linksTab.classList.add('tab-active');
+            playlistTab.classList.remove('tab-active');
+            linksContent.classList.remove('hidden');
+            playlistContent.classList.add('hidden');
+        });
+
+        // Import functionality
+        importBtn.addEventListener('click', () => {
+            if (m3uUrl.value) {
+                // In a real implementation, this would fetch from the URL
+                // For demo purposes, we'll use sample data
+                importSampleData();
+            } else if (m3uContent.value) {
+                parseM3uContent(m3uContent.value);
+            } else {
+                alert('Por favor, forneça uma URL ou cole o conteúdo da lista M3U');
+            }
+        });
+
+        m3uFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    parseM3uContent(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Parse M3U content
+        function parseM3uContent(content) {
+            const lines = content.split('\n');
+            const items = [];
+            let currentItem = {};
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (line.startsWith('#EXTINF:')) {
+                    currentItem = {};
+                    
+                    // Extract tvg-name
+                    const nameMatch = line.match(/tvg-name="([^"]+)"/);
+                    if (nameMatch) {
+                        currentItem.name = nameMatch[1];
+                    }
+                    
+                    // Extract tvg-logo
+                    const logoMatch = line.match(/tvg-logo="([^"]+)"/);
+                    if (logoMatch) {
+                        currentItem.logo = logoMatch[1];
+                    }
+                    
+                    // Extract group-title
+                    const groupMatch = line.match(/group-title="([^"]+)"/);
+                    if (groupMatch) {
+                        currentItem.group = groupMatch[1];
+                    }
+                    
+                    // If name wasn't in tvg-name, try to get it from the end of the line
+                    if (!currentItem.name) {
+                        const commaIndex = line.lastIndexOf(',');
+                        if (commaIndex !== -1) {
+                            currentItem.name = line.substring(commaIndex + 1).trim();
+                        }
+                    }
+                } else if (line && !line.startsWith('#') && Object.keys(currentItem).length > 0) {
+                    // This is a URL line
+                    currentItem.url = line;
+                    items.push({...currentItem});
+                    currentItem = {};
+                }
+            }
+
+            if (items.length > 0) {
+                playlistItems = items;
+                updatePlaylistDisplay();
+                updateLinksDisplay();
+                updateGroupFilter();
+                exportBtn.disabled = false;
+                clearBtn.disabled = false;
+            } else {
+                alert('Nenhum item encontrado na lista M3U');
+            }
+        }
+
+        // For demo purposes
+        function importSampleData() {
+            playlistItems = [
+                {
+                    name: "De Repente Pai [L]",
+                    logo: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/4iviSGM2KWEUDhU4m8ujyN9MI6K.jpg",
+                    group: "Filmes | Legendados",
+                    url: "http://rootdns.fun/movie/Wsht2023/3292.mp4"
+                },
+                {
+                    name: "Velozes e Furiosos 9",
+                    logo: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/8L4Mep3KDUK4ztUgP2HzPZ8Qhv0.jpg",
+                    group: "Filmes | Ação",
+                    url: "http://example.com/movies/ff9.mp4"
+                },
+                {
+                    name: "Globo SP HD",
+                    logo: "https://logodownload.org/wp-content/uploads/2013/12/rede-globo-logo-0.png",
+                    group: "Canais | Abertos",
+                    url: "http://example.com/live/globosp.m3u8"
+                },
+                {
+                    name: "ESPN Brasil HD",
+                    logo: "https://logodownload.org/wp-content/uploads/2017/05/espn-logo-4.png",
+                    group: "Canais | Esportes",
+                    url: "http://example.com/live/espnbr.m3u8"
+                },
+                {
+                    name: "Game of Thrones S01E01",
+                    logo: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg",
+                    group: "Séries | Drama",
+                    url: "http://example.com/series/got/s01e01.mp4"
+                }
+            ];
+            
+            updatePlaylistDisplay();
+            updateLinksDisplay();
+            updateGroupFilter();
+            exportBtn.disabled = false;
+            clearBtn.disabled = false;
+        }
+
+        // Get filtered items based on current search and group filter
+        function getFilteredItems() {
+            return playlistItems.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(currentSearchTerm) || 
+                                     (item.group && item.group.toLowerCase().includes(currentSearchTerm));
+                const matchesGroup = !currentSelectedGroup || item.group === currentSelectedGroup;
+                return matchesSearch && matchesGroup;
+            });
+        }
+
+        // Update playlist display
+        function updatePlaylistDisplay() {
+            const filteredItems = getFilteredItems();
+            
+            if (filteredItems.length === 0) {
+                playlistContent.innerHTML = `
+                    <div class="text-center py-8 text-blue-300">
+                        Nenhum item encontrado
+                    </div>
+                `;
+                return;
+            }
+            
+            playlistContent.innerHTML = '';
+            
+            filteredItems.forEach((item, index) => {
+                // Find the original index in the full playlist array
+                const originalIndex = playlistItems.findIndex(i => 
+                    i.name === item.name && i.url === item.url && i.group === item.group
+                );
+                
+                const itemElement = document.createElement('div');
+                itemElement.className = 'playlist-item p-4 rounded-lg mb-3 border border-blue-500/20 hover:border-blue-400/50 transition';
+                
+                itemElement.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 rounded overflow-hidden flex-shrink-0 bg-slate-900 flex items-center justify-center">
+                            ${item.logo ? `<img src="${item.logo}" alt="${item.name}" class="w-full h-full object-cover">` : 
+                            `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>`}
+                        </div>
+                        <div class="ml-4 flex-grow">
+                            <h3 class="font-medium">${item.name}</h3>
+                            <p class="text-sm text-blue-300">${item.group || 'Sem grupo'}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="edit-btn p-2 rounded-lg bg-blue-600/30 hover:bg-blue-600/50 transition" data-index="${originalIndex}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                            <button class="delete-btn p-2 rounded-lg bg-red-600/30 hover:bg-red-500/70 transition" data-index="${originalIndex}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                playlistContent.appendChild(itemElement);
+                
+                // Add event listeners to the buttons
+                const editBtn = itemElement.querySelector('.edit-btn');
+                const deleteBtn = itemElement.querySelector('.delete-btn');
+                
+                editBtn.addEventListener('click', () => {
+                    openEditModal(parseInt(editBtn.dataset.index));
+                });
+                
+                deleteBtn.addEventListener('click', () => {
+                    deleteItem(parseInt(deleteBtn.dataset.index));
+                });
+            });
+        }
+
+        // Update links display
+        function updateLinksDisplay() {
+            const filteredItems = getFilteredItems();
+            
+            if (filteredItems.length === 0) {
+                linksContent.innerHTML = `
+                    <div class="text-center py-8 text-blue-300">
+                        Nenhum item encontrado
+                    </div>
+                `;
+                return;
+            }
+            
+            linksContent.innerHTML = '';
+            
+            filteredItems.forEach((item) => {
+                const linkElement = document.createElement('div');
+                linkElement.className = 'playlist-item p-4 rounded-lg mb-3 border border-blue-500/20';
+                
+                linkElement.innerHTML = `
+                    <div>
+                        <h3 class="font-medium mb-1">${item.name}</h3>
+                        <p class="text-sm text-blue-300 mb-2">${item.group || 'Sem grupo'}</p>
+                        <div class="bg-slate-900 p-3 rounded-lg break-all">
+                            <code class="text-green-300 text-sm">${item.url}</code>
+                        </div>
+                    </div>
+                `;
+                
+                linksContent.appendChild(linkElement);
+            });
+        }
+
+        // Update group filter
+        function updateGroupFilter() {
+            const groups = [...new Set(playlistItems.map(item => item.group).filter(Boolean))];
+            
+            filterGroup.innerHTML = '<option value="">Todos os grupos</option>';
+            
+            groups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group;
+                option.textContent = group;
+                filterGroup.appendChild(option);
+            });
+        }
+
+        // Search and filter functionality
+        searchInput.addEventListener('input', () => {
+            currentSearchTerm = searchInput.value.toLowerCase();
+            updatePlaylistDisplay();
+            updateLinksDisplay();
+        });
+        
+        filterGroup.addEventListener('change', () => {
+            currentSelectedGroup = filterGroup.value;
+            updatePlaylistDisplay();
+            updateLinksDisplay();
+        });
+
+        // Add new item
+        addNewBtn.addEventListener('click', () => {
+            currentEditIndex = -1;
+            modalTitle.textContent = 'Adicionar Novo Item';
+            editName.value = '';
+            editGroup.value = '';
+            editLogo.value = '';
+            editUrl.value = '';
+            editModal.classList.remove('hidden');
+        });
+
+        // Edit item
+        function openEditModal(index) {
+            currentEditIndex = index;
+            const item = playlistItems[index];
+            
+            modalTitle.textContent = 'Editar Item';
+            editName.value = item.name || '';
+            editGroup.value = item.group || '';
+            editLogo.value = item.logo || '';
+            editUrl.value = item.url || '';
+            
+            editModal.classList.remove('hidden');
+        }
+
+        // Delete item
+        function deleteItem(index) {
+            if (confirm('Tem certeza que deseja excluir este item?')) {
+                playlistItems.splice(index, 1);
+                updatePlaylistDisplay();
+                updateLinksDisplay();
+                updateGroupFilter();
+                
+                if (playlistItems.length === 0) {
+                    exportBtn.disabled = true;
+                    clearBtn.disabled = true;
+                }
+            }
+        }
+
+        // Modal actions
+        modalCancel.addEventListener('click', () => {
+            editModal.classList.add('hidden');
+        });
+
+        modalSave.addEventListener('click', () => {
+            const newItem = {
+                name: editName.value,
+                group: editGroup.value,
+                logo: editLogo.value,
+                url: editUrl.value
+            };
+            
+            if (!newItem.name || !newItem.url) {
+                alert('Nome e URL são obrigatórios');
+                return;
+            }
+            
+            if (currentEditIndex === -1) {
+                // Add new item
+                playlistItems.push(newItem);
+            } else {
+                // Update existing item
+                playlistItems[currentEditIndex] = newItem;
+            }
+            
+            updatePlaylistDisplay();
+            updateLinksDisplay();
+            updateGroupFilter();
+            editModal.classList.add('hidden');
+            
+            exportBtn.disabled = false;
+            clearBtn.disabled = false;
+        });
+
+        // Export functionality
+        exportBtn.addEventListener('click', () => {
+            // Determine if we should export all items or just filtered items
+            const itemsToExport = currentSearchTerm || currentSelectedGroup ? getFilteredItems() : playlistItems;
+            
+            let m3uContent = '#EXTM3U\n';
+            
+            itemsToExport.forEach(item => {
+                let line = '#EXTINF:-1 ';
+                if (item.name) line += `tvg-name="${item.name}" `;
+                if (item.logo) line += `tvg-logo="${item.logo}" `;
+                if (item.group) line += `group-title="${item.group}" `;
+                line += `,${item.name}\n`;
+                line += `${item.url}\n`;
+                
+                m3uContent += line;
+            });
+            
+            const blob = new Blob([m3uContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'playlist.m3u';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // Clear functionality
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja limpar toda a lista?')) {
+                playlistItems = [];
+                updatePlaylistDisplay();
+                updateLinksDisplay();
+                updateGroupFilter();
+                exportBtn.disabled = true;
+                clearBtn.disabled = true;
+            }
+        });
+
+        // Initialize with empty state
+        updatePlaylistDisplay();
+        updateLinksDisplay();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'946f9f12d553e29c',t:'MTc0ODQ1NDkxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

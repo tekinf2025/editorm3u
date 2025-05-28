@@ -1,0 +1,1033 @@
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EditStream - Tekinformática</title>
+    <link rel="icon" href="https://i.imgur.com/3Dz8KBM.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('https://i.imgur.com/zJzb34E.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: white;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #2563eb;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+        }
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="text-gray-200 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <img src="https://i.imgur.com/3Dz8KBM.png" alt="Logo" class="h-12 w-12 mr-3">
+                    <h1 class="text-3xl font-bold text-white">EditorStream - Tekinformática</h1>
+                </div>
+                <div class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
+                    <p class="font-medium">Aplicativo RTv | Servidor desde 2021</p>
+                    <p class="text-sm">+150 mil conteúdos entre canais, filmes e séries</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Left Panel - Import and Controls -->
+            <div class="bg-gray-800 rounded-lg shadow-lg p-4 lg:col-span-1">
+                <h2 class="text-xl font-bold mb-4 text-white">Importar Lista M3U</h2>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Arquivo M3U</label>
+                    <div class="flex">
+                        <input type="file" id="m3u-file" accept=".m3u,.m3u8" class="hidden">
+                        <label for="m3u-file" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-l cursor-pointer text-center">
+                            Escolher arquivo
+                        </label>
+                        <button id="import-btn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-r">
+                            Importar
+                        </button>
+                    </div>
+                    <p id="file-name" class="mt-2 text-sm text-gray-400">Nenhum arquivo selecionado</p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">URL M3U</label>
+                    <div class="flex">
+                        <input type="text" id="m3u-url" placeholder="http://exemplo.com/lista.m3u" 
+                            class="flex-1 bg-gray-700 text-white py-2 px-4 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button id="import-url-btn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-r">
+                            Importar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <h3 class="text-lg font-bold mb-3 text-white">Demonstração RTv</h3>
+                    <div class="video-container rounded overflow-hidden">
+                        <video id="demo-video" controls poster="https://i.imgur.com/3Dz8KBM.png" class="w-full">
+                            <source src="#" type="video/mp4">
+                            Seu navegador não suporta vídeos HTML5.
+                        </video>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-2">Vídeo demonstrativo do aplicativo RTv</p>
+                </div>
+            </div>
+
+            <!-- Right Panel - Tabs and Content -->
+            <div class="lg:col-span-3">
+                <!-- Tabs -->
+                <div class="flex border-b border-gray-700 mb-4">
+                    <button id="playlist-tab" class="tab-active px-4 py-2 font-medium">
+                        <i class="fas fa-list mr-2"></i>Biblioteca
+                    </button>
+                    <button id="links-tab" class="px-4 py-2 font-medium text-gray-400">
+                        <i class="fas fa-link mr-2"></i>Links Importados
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div id="playlist-content" class="bg-gray-800 rounded-lg shadow-lg p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center">
+                            <h2 class="text-xl font-bold text-white mr-2">Biblioteca de Conteúdo</h2>
+                            <button class="bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded text-sm export-btn">
+                                <i class="fas fa-file-export mr-1"></i>Exportar
+                            </button>
+                        </div>
+                        <div>
+                            <span id="item-count" class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">0 itens</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtros para Biblioteca -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Filtrar por Grupo</label>
+                            <select id="group-filter" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="all">Todos os Grupos</option>
+                                <!-- Grupos serão adicionados dinamicamente -->
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Filtrar por</label>
+                            <select id="filter-type" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="all">Todos os Itens</option>
+                                <option value="group">Grupo</option>
+                                <option value="name">Nome</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Termo de Busca</label>
+                            <input type="text" id="filter-value" placeholder="Digite para filtrar" 
+                                class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Ordenar por</label>
+                            <select id="sort-by" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="name">Nome</option>
+                                <option value="group">Grupo</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Ordem</label>
+                            <select id="sort-order" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="asc">A-Z</option>
+                                <option value="desc">Z-A</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex items-end">
+                            <button id="apply-filter-btn" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded mr-2 flex-1">
+                                <i class="fas fa-filter mr-1"></i> Aplicar
+                            </button>
+                            <button id="clear-filter-btn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded flex-1">
+                                <i class="fas fa-times mr-1"></i> Limpar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-auto custom-scrollbar" style="max-height: 500px;">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-700">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Nome</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Grupo</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="playlist-table" class="divide-y divide-gray-700">
+                                <!-- Playlist items will be added here -->
+                                <tr class="text-gray-400">
+                                    <td colspan="3" class="px-4 py-8 text-center">Nenhum conteúdo disponível. Importe uma lista M3U para começar.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="links-content" class="hidden bg-gray-800 rounded-lg shadow-lg p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center">
+                            <h2 class="text-xl font-bold text-white mr-2">Links Importados</h2>
+                            <button class="bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded text-sm export-btn">
+                                <i class="fas fa-file-export mr-1"></i>Exportar
+                            </button>
+                        </div>
+                        <div class="flex items-center">
+                            <button id="bulk-edit-btn" class="bg-yellow-600 hover:bg-yellow-700 text-white py-1 px-3 rounded text-sm mr-2">
+                                <i class="fas fa-edit mr-1"></i>Editar URLs em Massa
+                            </button>
+                            <span id="links-count" class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">0 itens</span>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-700">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Nome</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Grupo</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">URL</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="links-table" class="divide-y divide-gray-700">
+                                <!-- Links will be added here -->
+                                <tr class="text-gray-400">
+                                    <td colspan="4" class="px-4 py-8 text-center">Nenhum link importado. Importe uma lista M3U para começar.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl">
+            <h3 class="text-xl font-bold mb-4 text-white">Editar Item</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Nome</label>
+                    <input type="text" id="edit-name" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Grupo</label>
+                    <input type="text" id="edit-group" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">URL</label>
+                <input type="text" id="edit-url" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Logo URL</label>
+                <input type="text" id="edit-logo" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div id="logo-preview" class="mt-2 flex justify-center">
+                    <img src="" alt="Logo Preview" class="h-16 rounded hidden">
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-edit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">
+                    Cancelar
+                </button>
+                <button id="save-edit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
+                    Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4 text-white">Confirmar Exclusão</h3>
+            <p class="mb-6 text-gray-300">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+            
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-delete" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">
+                    Cancelar
+                </button>
+                <button id="confirm-delete" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded">
+                    Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="export-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl">
+            <h3 class="text-xl font-bold mb-4 text-white">Exportar Lista M3U</h3>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Nome do Arquivo</label>
+                <input type="text" id="export-filename" value="minha_lista.m3u" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Conteúdo</label>
+                <textarea id="export-content" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 h-64 font-mono text-sm" readonly></textarea>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-export" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">
+                    Fechar
+                </button>
+                <button id="download-export" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
+                    Download
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk URL Edit Modal -->
+    <div id="bulk-edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl">
+            <h3 class="text-xl font-bold mb-4 text-white">Editar URLs em Massa</h3>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Texto a Procurar</label>
+                <input type="text" id="search-text" placeholder="Ex: rootdns.fun" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Substituir Por</label>
+                <input type="text" id="replace-text" placeholder="Ex: newserver.com" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Aplicar Apenas em</label>
+                <select id="bulk-filter" class="w-full bg-gray-700 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="all">Todos os Links</option>
+                    <option value="filtered">Apenas Links Filtrados</option>
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <div class="flex items-center">
+                    <input type="checkbox" id="preview-changes" class="mr-2">
+                    <label for="preview-changes" class="text-sm">Visualizar alterações antes de aplicar</label>
+                </div>
+            </div>
+            
+            <div id="preview-container" class="mb-4 hidden">
+                <label class="block text-sm font-medium mb-2">Prévia das Alterações</label>
+                <div class="bg-gray-900 p-3 rounded h-32 overflow-auto custom-scrollbar text-sm font-mono">
+                    <div id="preview-content" class="text-gray-400"></div>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Mostrando até 5 exemplos de alterações</p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-bulk-edit" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">
+                    Cancelar
+                </button>
+                <button id="preview-bulk-edit" class="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded">
+                    Visualizar
+                </button>
+                <button id="apply-bulk-edit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
+                    Aplicar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let playlistItems = [];
+        let filteredItems = [];
+        let currentEditItem = null;
+        let currentDeleteItem = null;
+        let activeTab = 'playlist';
+        let currentFilter = {
+            type: 'all',
+            value: '',
+            group: 'all',
+            sortBy: 'name',
+            sortOrder: 'asc'
+        };
+
+        // DOM Elements
+        const playlistTab = document.getElementById('playlist-tab');
+        const linksTab = document.getElementById('links-tab');
+        const playlistContent = document.getElementById('playlist-content');
+        const linksContent = document.getElementById('links-content');
+        const playlistTable = document.getElementById('playlist-table');
+        const linksTable = document.getElementById('links-table');
+        const itemCount = document.getElementById('item-count');
+        const linksCount = document.getElementById('links-count');
+        const fileInput = document.getElementById('m3u-file');
+        const fileName = document.getElementById('file-name');
+        const importBtn = document.getElementById('import-btn');
+        const importUrlBtn = document.getElementById('import-url-btn');
+        const m3uUrlInput = document.getElementById('m3u-url');
+        const groupFilter = document.getElementById('group-filter');
+        const filterType = document.getElementById('filter-type');
+        const filterValue = document.getElementById('filter-value');
+        const sortBy = document.getElementById('sort-by');
+        const sortOrder = document.getElementById('sort-order');
+        const applyFilterBtn = document.getElementById('apply-filter-btn');
+        const clearFilterBtn = document.getElementById('clear-filter-btn');
+        const editModal = document.getElementById('edit-modal');
+        const editName = document.getElementById('edit-name');
+        const editGroup = document.getElementById('edit-group');
+        const editUrl = document.getElementById('edit-url');
+        const editLogo = document.getElementById('edit-logo');
+        const logoPreview = document.getElementById('logo-preview');
+        const logoImg = logoPreview.querySelector('img');
+        const saveEditBtn = document.getElementById('save-edit');
+        const cancelEditBtn = document.getElementById('cancel-edit');
+        const deleteModal = document.getElementById('delete-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete');
+        const cancelDeleteBtn = document.getElementById('cancel-delete');
+        const exportModal = document.getElementById('export-modal');
+        const exportFilename = document.getElementById('export-filename');
+        const exportContent = document.getElementById('export-content');
+        const downloadExportBtn = document.getElementById('download-export');
+        const cancelExportBtn = document.getElementById('cancel-export');
+        const demoVideo = document.getElementById('demo-video');
+        const bulkEditBtn = document.getElementById('bulk-edit-btn');
+        const bulkEditModal = document.getElementById('bulk-edit-modal');
+        const searchText = document.getElementById('search-text');
+        const replaceText = document.getElementById('replace-text');
+        const bulkFilter = document.getElementById('bulk-filter');
+        const previewChanges = document.getElementById('preview-changes');
+        const previewContainer = document.getElementById('preview-container');
+        const previewContent = document.getElementById('preview-content');
+        const cancelBulkEditBtn = document.getElementById('cancel-bulk-edit');
+        const previewBulkEditBtn = document.getElementById('preview-bulk-edit');
+        const applyBulkEditBtn = document.getElementById('apply-bulk-edit');
+
+        // Tab switching
+        playlistTab.addEventListener('click', () => {
+            activeTab = 'playlist';
+            playlistTab.classList.add('tab-active');
+            linksTab.classList.remove('tab-active');
+            playlistTab.classList.remove('text-gray-400');
+            linksTab.classList.add('text-gray-400');
+            playlistContent.classList.remove('hidden');
+            linksContent.classList.add('hidden');
+        });
+
+        linksTab.addEventListener('click', () => {
+            activeTab = 'links';
+            linksTab.classList.add('tab-active');
+            playlistTab.classList.remove('tab-active');
+            linksTab.classList.remove('text-gray-400');
+            playlistTab.classList.add('text-gray-400');
+            linksContent.classList.remove('hidden');
+            playlistContent.classList.add('hidden');
+        });
+
+        // File input handling
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+            } else {
+                fileName.textContent = 'Nenhum arquivo selecionado';
+            }
+        });
+
+        // Import M3U from file
+        importBtn.addEventListener('click', () => {
+            if (fileInput.files.length === 0) {
+                alert('Por favor, selecione um arquivo M3U para importar.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const content = e.target.result;
+                parseM3U(content);
+            };
+
+            reader.readAsText(file);
+        });
+
+        // Import M3U from URL
+        importUrlBtn.addEventListener('click', () => {
+            const url = m3uUrlInput.value.trim();
+            if (!url) {
+                alert('Por favor, insira uma URL válida.');
+                return;
+            }
+
+            // In a real application, you would use fetch to get the content
+            // For this demo, we'll simulate with a sample M3U content
+            const sampleM3U = `#EXTM3U
+#EXTINF:-1 tvg-id="1" tvg-name="De Repente Pai [L]" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/4iviSGM2KWEUDhU4m8ujyN9MI6K.jpg" group-title="Filmes | Legendados",De Repente Pai [L]
+http://rootdns.fun/movie/Wsht2023/3292.mp4
+#EXTINF:-1 tvg-id="2" tvg-name="Homem-Aranha" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg" group-title="Filmes | Ação",Homem-Aranha
+http://rootdns.fun/movie/Wsht2023/1234.mp4
+#EXTINF:-1 tvg-id="3" tvg-name="Vingadores" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/u49fzmIJHkb1H4oGFTXtBGgaUS1.jpg" group-title="Filmes | Ação",Vingadores
+http://rootdns.fun/movie/Wsht2023/5678.mp4
+#EXTINF:-1 tvg-id="4" tvg-name="Interestelar" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/nrSaXF39nDfAAeLKksRCyvSzI2a.jpg" group-title="Filmes | Ficção",Interestelar
+http://rootdns.fun/movie/Wsht2023/9012.mp4
+#EXTINF:-1 tvg-id="5" tvg-name="Globo SP HD" tvg-logo="https://i.imgur.com/TL9HqlP.png" group-title="Canais | Abertos",Globo SP HD
+http://rootdns.fun/live/Wsht2023/globo.m3u8
+#EXTINF:-1 tvg-id="6" tvg-name="SBT HD" tvg-logo="https://i.imgur.com/7SlZF9B.png" group-title="Canais | Abertos",SBT HD
+http://rootdns.fun/live/Wsht2023/sbt.m3u8
+#EXTINF:-1 tvg-id="7" tvg-name="HBO HD" tvg-logo="https://i.imgur.com/IKuCTEP.png" group-title="Canais | Filmes e Séries",HBO HD
+http://rootdns.fun/live/Wsht2023/hbo.m3u8
+#EXTINF:-1 tvg-id="8" tvg-name="ESPN HD" tvg-logo="https://i.imgur.com/jgK43Zc.png" group-title="Canais | Esportes",ESPN HD
+http://rootdns.fun/live/Wsht2023/espn.m3u8`;
+
+            parseM3U(sampleM3U);
+            m3uUrlInput.value = '';
+        });
+
+        // Parse M3U content
+        function parseM3U(content) {
+            const lines = content.split('\n');
+            const items = [];
+            let currentItem = null;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (line.startsWith('#EXTINF:')) {
+                    // Extract metadata
+                    const metadataRegex = /tvg-name="([^"]*)".*tvg-logo="([^"]*)".*group-title="([^"]*)"/;
+                    const match = line.match(metadataRegex);
+                    
+                    if (match) {
+                        const name = match[1];
+                        const logo = match[2];
+                        const group = match[3];
+                        
+                        currentItem = {
+                            name,
+                            logo,
+                            group,
+                            url: ''
+                        };
+                    }
+                } else if (line && !line.startsWith('#') && currentItem) {
+                    // This is the URL line
+                    currentItem.url = line;
+                    items.push(currentItem);
+                    currentItem = null;
+                }
+            }
+
+            playlistItems = [...playlistItems, ...items];
+            updateGroupFilter();
+            applyFilters();
+        }
+
+        // Update group filter dropdown
+        function updateGroupFilter() {
+            // Get unique groups
+            const groups = [...new Set(playlistItems.map(item => item.group))].sort();
+            
+            // Clear current options except "All"
+            while (groupFilter.options.length > 1) {
+                groupFilter.remove(1);
+            }
+            
+            // Add group options
+            groups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group;
+                option.textContent = group;
+                groupFilter.appendChild(option);
+            });
+        }
+
+        // Apply filters and sorting
+        function applyFilters() {
+            let filtered = [...playlistItems];
+            
+            // Apply group filter
+            if (currentFilter.group !== 'all') {
+                filtered = filtered.filter(item => item.group === currentFilter.group);
+            }
+            
+            // Apply type filter
+            if (currentFilter.type !== 'all' && currentFilter.value) {
+                const value = currentFilter.value.toLowerCase();
+                filtered = filtered.filter(item => {
+                    if (currentFilter.type === 'group') {
+                        return item.group.toLowerCase().includes(value);
+                    } else if (currentFilter.type === 'name') {
+                        return item.name.toLowerCase().includes(value);
+                    }
+                    return true;
+                });
+            }
+            
+            // Apply sorting
+            filtered.sort((a, b) => {
+                let valueA, valueB;
+                
+                if (currentFilter.sortBy === 'name') {
+                    valueA = a.name.toLowerCase();
+                    valueB = b.name.toLowerCase();
+                } else {
+                    valueA = a.group.toLowerCase();
+                    valueB = b.group.toLowerCase();
+                }
+                
+                if (currentFilter.sortOrder === 'asc') {
+                    return valueA.localeCompare(valueB);
+                } else {
+                    return valueB.localeCompare(valueA);
+                }
+            });
+            
+            filteredItems = filtered;
+            renderTables();
+        }
+
+        // Render tables
+        function renderTables() {
+            renderPlaylistTable();
+            renderLinksTable();
+        }
+
+        // Render playlist table
+        function renderPlaylistTable() {
+            if (filteredItems.length === 0) {
+                playlistTable.innerHTML = `
+                    <tr class="text-gray-400">
+                        <td colspan="3" class="px-4 py-8 text-center">Nenhum conteúdo disponível. Importe uma lista M3U para começar.</td>
+                    </tr>
+                `;
+                itemCount.textContent = '0 itens';
+                return;
+            }
+
+            let html = '';
+            filteredItems.forEach((item, index) => {
+                html += `
+                    <tr class="hover:bg-gray-700">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 mr-3">
+                                    <img class="h-10 w-10 rounded object-cover" src="${item.logo || 'https://i.imgur.com/3Dz8KBM.png'}" alt="${item.name}">
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-white">${item.name}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 text-xs rounded-full bg-blue-900 text-blue-200">${item.group}</span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <button class="text-blue-400 hover:text-blue-300 mr-3" onclick="editItem(${index})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-400 hover:text-red-300" onclick="deleteItem(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            playlistTable.innerHTML = html;
+            itemCount.textContent = `${filteredItems.length} itens`;
+        }
+
+        // Render links table
+        function renderLinksTable() {
+            if (filteredItems.length === 0) {
+                linksTable.innerHTML = `
+                    <tr class="text-gray-400">
+                        <td colspan="4" class="px-4 py-8 text-center">Nenhum link importado. Importe uma lista M3U para começar.</td>
+                    </tr>
+                `;
+                linksCount.textContent = '0 itens';
+                return;
+            }
+
+            let html = '';
+            filteredItems.forEach((item, index) => {
+                html += `
+                    <tr class="hover:bg-gray-700">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 mr-3">
+                                    <img class="h-10 w-10 rounded object-cover" src="${item.logo || 'https://i.imgur.com/3Dz8KBM.png'}" alt="${item.name}">
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-white">${item.name}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 text-xs rounded-full bg-blue-900 text-blue-200">${item.group}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="text-sm text-gray-400 truncate max-w-xs">${item.url}</div>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <button class="text-green-400 hover:text-green-300 mr-3" onclick="playItem(${index})">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="text-blue-400 hover:text-blue-300 mr-3" onclick="editItem(${index})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-400 hover:text-red-300" onclick="deleteItem(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            linksTable.innerHTML = html;
+            linksCount.textContent = `${filteredItems.length} itens`;
+        }
+
+        // Edit item
+        window.editItem = function(index) {
+            currentEditItem = filteredItems[index];
+            
+            editName.value = currentEditItem.name;
+            editGroup.value = currentEditItem.group;
+            editUrl.value = currentEditItem.url;
+            editLogo.value = currentEditItem.logo;
+            
+            if (currentEditItem.logo) {
+                logoImg.src = currentEditItem.logo;
+                logoImg.classList.remove('hidden');
+            } else {
+                logoImg.classList.add('hidden');
+            }
+            
+            editModal.classList.remove('hidden');
+        };
+
+        // Save edit
+        saveEditBtn.addEventListener('click', () => {
+            if (currentEditItem) {
+                const originalItem = playlistItems.find(item => 
+                    item.name === currentEditItem.name && 
+                    item.url === currentEditItem.url
+                );
+                
+                if (originalItem) {
+                    originalItem.name = editName.value;
+                    originalItem.group = editGroup.value;
+                    originalItem.url = editUrl.value;
+                    originalItem.logo = editLogo.value;
+                }
+                
+                updateGroupFilter();
+                applyFilters();
+                editModal.classList.add('hidden');
+                currentEditItem = null;
+            }
+        });
+
+        // Cancel edit
+        cancelEditBtn.addEventListener('click', () => {
+            editModal.classList.add('hidden');
+            currentEditItem = null;
+        });
+
+        // Delete item
+        window.deleteItem = function(index) {
+            currentDeleteItem = filteredItems[index];
+            deleteModal.classList.remove('hidden');
+        };
+
+        // Confirm delete
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (currentDeleteItem) {
+                const index = playlistItems.findIndex(item => 
+                    item.name === currentDeleteItem.name && 
+                    item.url === currentDeleteItem.url
+                );
+                
+                if (index !== -1) {
+                    playlistItems.splice(index, 1);
+                }
+                
+                updateGroupFilter();
+                applyFilters();
+                deleteModal.classList.add('hidden');
+                currentDeleteItem = null;
+            }
+        });
+
+        // Cancel delete
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteModal.classList.add('hidden');
+            currentDeleteItem = null;
+        });
+
+        // Play item
+        window.playItem = function(index) {
+            const item = filteredItems[index];
+            alert(`Reproduzindo: ${item.name}\nURL: ${item.url}`);
+            // In a real application, you would integrate with a video player
+        };
+
+        // Logo preview
+        editLogo.addEventListener('input', () => {
+            const logoUrl = editLogo.value.trim();
+            if (logoUrl) {
+                logoImg.src = logoUrl;
+                logoImg.classList.remove('hidden');
+            } else {
+                logoImg.classList.add('hidden');
+            }
+        });
+
+        // Group filter change
+        groupFilter.addEventListener('change', () => {
+            currentFilter.group = groupFilter.value;
+            applyFilters();
+        });
+
+        // Apply filters button
+        applyFilterBtn.addEventListener('click', () => {
+            currentFilter.type = filterType.value;
+            currentFilter.value = filterValue.value;
+            currentFilter.group = groupFilter.value;
+            currentFilter.sortBy = sortBy.value;
+            currentFilter.sortOrder = sortOrder.value;
+            applyFilters();
+        });
+
+        // Clear filters button
+        clearFilterBtn.addEventListener('click', () => {
+            groupFilter.value = 'all';
+            filterType.value = 'all';
+            filterValue.value = '';
+            sortBy.value = 'name';
+            sortOrder.value = 'asc';
+            
+            currentFilter = {
+                type: 'all',
+                value: '',
+                group: 'all',
+                sortBy: 'name',
+                sortOrder: 'asc'
+            };
+            
+            applyFilters();
+        });
+
+        // Export functionality
+        window.exportPlaylist = function() {
+            let m3uContent = '#EXTM3U\n';
+            
+            filteredItems.forEach(item => {
+                m3uContent += `#EXTINF:-1 tvg-name="${item.name}" tvg-logo="${item.logo}" group-title="${item.group}",${item.name}\n`;
+                m3uContent += `${item.url}\n`;
+            });
+            
+            exportContent.value = m3uContent;
+            exportModal.classList.remove('hidden');
+        };
+
+        // Download export
+        downloadExportBtn.addEventListener('click', () => {
+            const filename = exportFilename.value;
+            const content = exportContent.value;
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            exportModal.classList.add('hidden');
+        });
+
+        // Cancel export
+        cancelExportBtn.addEventListener('click', () => {
+            exportModal.classList.add('hidden');
+        });
+
+        // Bulk URL Edit
+        bulkEditBtn.addEventListener('click', () => {
+            searchText.value = '';
+            replaceText.value = '';
+            bulkFilter.value = 'all';
+            previewChanges.checked = true;
+            previewContainer.classList.add('hidden');
+            bulkEditModal.classList.remove('hidden');
+        });
+
+        // Preview bulk edit
+        previewBulkEditBtn.addEventListener('click', () => {
+            const search = searchText.value.trim();
+            const replace = replaceText.value.trim();
+            
+            if (!search) {
+                alert('Por favor, insira um texto para procurar.');
+                return;
+            }
+            
+            const itemsToEdit = bulkFilter.value === 'all' ? playlistItems : filteredItems;
+            const previewItems = [];
+            
+            for (let i = 0; i < itemsToEdit.length; i++) {
+                const item = itemsToEdit[i];
+                if (item.url.includes(search)) {
+                    const newUrl = item.url.replace(new RegExp(search, 'g'), replace);
+                    previewItems.push({
+                        name: item.name,
+                        oldUrl: item.url,
+                        newUrl: newUrl
+                    });
+                    
+                    if (previewItems.length >= 5) break;
+                }
+            }
+            
+            if (previewItems.length === 0) {
+                previewContent.innerHTML = '<p>Nenhuma correspondência encontrada.</p>';
+            } else {
+                let html = '';
+                previewItems.forEach(item => {
+                    html += `<p class="mb-2"><strong>${item.name}</strong></p>`;
+                    html += `<p class="text-red-400 line-through mb-1">${item.oldUrl}</p>`;
+                    html += `<p class="text-green-400 mb-3">${item.newUrl}</p>`;
+                });
+                previewContent.innerHTML = html;
+            }
+            
+            previewContainer.classList.remove('hidden');
+        });
+
+        // Apply bulk edit
+        applyBulkEditBtn.addEventListener('click', () => {
+            const search = searchText.value.trim();
+            const replace = replaceText.value.trim();
+            
+            if (!search) {
+                alert('Por favor, insira um texto para procurar.');
+                return;
+            }
+            
+            if (previewChanges.checked && previewContainer.classList.contains('hidden')) {
+                previewBulkEditBtn.click();
+                return;
+            }
+            
+            const itemsToEdit = bulkFilter.value === 'all' ? playlistItems : filteredItems;
+            let count = 0;
+            
+            itemsToEdit.forEach(item => {
+                if (item.url.includes(search)) {
+                    item.url = item.url.replace(new RegExp(search, 'g'), replace);
+                    count++;
+                }
+            });
+            
+            applyFilters();
+            bulkEditModal.classList.add('hidden');
+            
+            alert(`${count} URLs foram atualizados com sucesso.`);
+        });
+
+        // Cancel bulk edit
+        cancelBulkEditBtn.addEventListener('click', () => {
+            bulkEditModal.classList.add('hidden');
+        });
+
+        // Preview changes checkbox
+        previewChanges.addEventListener('change', () => {
+            if (!previewChanges.checked) {
+                previewContainer.classList.add('hidden');
+            }
+        });
+
+        // Add export button to both tabs
+        const addExportButton = () => {
+            const exportBtns = document.querySelectorAll('.export-btn');
+            exportBtns.forEach(btn => {
+                btn.onclick = exportPlaylist;
+            });
+        };
+
+        // Initialize with sample data
+        const initSampleData = () => {
+            const sampleM3U = `#EXTM3U
+#EXTINF:-1 tvg-id="1" tvg-name="De Repente Pai [L]" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/4iviSGM2KWEUDhU4m8ujyN9MI6K.jpg" group-title="Filmes | Legendados",De Repente Pai [L]
+http://rootdns.fun/movie/Wsht2023/3292.mp4
+#EXTINF:-1 tvg-id="2" tvg-name="Homem-Aranha" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg" group-title="Filmes | Ação",Homem-Aranha
+http://rootdns.fun/movie/Wsht2023/1234.mp4
+#EXTINF:-1 tvg-id="3" tvg-name="Vingadores" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/u49fzmIJHkb1H4oGFTXtBGgaUS1.jpg" group-title="Filmes | Ação",Vingadores
+http://rootdns.fun/movie/Wsht2023/5678.mp4
+#EXTINF:-1 tvg-id="4" tvg-name="Interestelar" tvg-logo="https://image.tmdb.org/t/p/w600_and_h900_bestv2/nrSaXF39nDfAAeLKksRCyvSzI2a.jpg" group-title="Filmes | Ficção",Interestelar
+http://rootdns.fun/movie/Wsht2023/9012.mp4
+#EXTINF:-1 tvg-id="5" tvg-name="Globo SP HD" tvg-logo="https://i.imgur.com/TL9HqlP.png" group-title="Canais | Abertos",Globo SP HD
+http://rootdns.fun/live/Wsht2023/globo.m3u8
+#EXTINF:-1 tvg-id="6" tvg-name="SBT HD" tvg-logo="https://i.imgur.com/7SlZF9B.png" group-title="Canais | Abertos",SBT HD
+http://rootdns.fun/live/Wsht2023/sbt.m3u8
+#EXTINF:-1 tvg-id="7" tvg-name="HBO HD" tvg-logo="https://i.imgur.com/IKuCTEP.png" group-title="Canais | Filmes e Séries",HBO HD
+http://rootdns.fun/live/Wsht2023/hbo.m3u8
+#EXTINF:-1 tvg-id="8" tvg-name="ESPN HD" tvg-logo="https://i.imgur.com/jgK43Zc.png" group-title="Canais | Esportes",ESPN HD
+http://rootdns.fun/live/Wsht2023/espn.m3u8`;
+
+            parseM3U(sampleM3U);
+            addExportButton();
+        };
+
+        // Initialize the application
+        initSampleData();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9470012fa376e841',t:'MTc0ODQ1ODkyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
