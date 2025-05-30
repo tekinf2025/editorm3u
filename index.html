@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M3U-Editor - Tekinformática</title>
+    <title>EditStream - Tekinformática</title>
     <link rel="icon" href="https://i.imgur.com/3Dz8KBM.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -15,14 +15,13 @@
             background-attachment: fixed;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
+            height: 8px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
             background: #1f2937;
@@ -36,964 +35,1462 @@
         }
         .tooltip {
             position: relative;
-            display: inline-block;
         }
         .tooltip .tooltiptext {
             visibility: hidden;
-            width: 140px;
-            background-color: #555;
+            width: 120px;
+            background-color: #1f2937;
             color: #fff;
             text-align: center;
             border-radius: 6px;
             padding: 5px;
             position: absolute;
             z-index: 1;
-            bottom: 150%;
+            bottom: 125%;
             left: 50%;
-            margin-left: -75px;
+            margin-left: -60px;
             opacity: 0;
             transition: opacity 0.3s;
-        }
-        .tooltip .tooltiptext::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #555 transparent transparent transparent;
         }
         .tooltip:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
         }
+        .link-cell {
+            max-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .link-expanded {
+            white-space: normal;
+            word-break: break-all;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 9999px;
+        }
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        .badge-warning {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        .badge-danger {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        .logo-preview {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            color: #6b7280;
+        }
     </style>
 </head>
 <body class="text-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
         <header class="mb-8">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div>
-                    <h1 class="text-4xl font-bold text-blue-500 mb-2">EditorStream - Tekinformática</h1>
-                    <p class="text-gray-300">Aplicativo RTv, Servidor, Conta Criada em 2021</p>
-                    <p class="text-gray-300">Este servidor tem mais de 150 mil conteúdos entre canais, filmes e séries.</p>
-                </div>
-                <div class="mt-4 md:mt-0">
-                    <button id="showVideoBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                        <i class="fas fa-play mr-2"></i>Vídeo Demonstrativo RTv
-                    </button>
-                </div>
-            </div>
+            <h1 class="text-4xl font-bold text-center text-blue-500 mb-2">M3U Editor - Tekinformática</h1>
+            <p class="text-center text-gray-400">Gerencie e edite suas listas de reprodução M3U</p>
         </header>
 
-        <!-- Video Modal -->
-        <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-            <div class="bg-gray-800 p-4 rounded-lg w-full max-w-4xl">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">Demonstração do aplicativo RTv</h3>
-                    <button id="closeVideoBtn" class="text-gray-400 hover:text-white">
-                        <i class="fas fa-times text-2xl"></i>
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Import Section -->
+            <div class="bg-gray-800 rounded-lg p-6 shadow-lg lg:w-1/3">
+                <h2 class="text-xl font-semibold mb-4 text-blue-400">Importar Lista M3U</h2>
+                
+                <div class="mb-6">
+                    <div class="flex gap-2">
+                        <button id="importFileBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1">
+                            <i class="fas fa-file-import mr-2"></i>Importar Arquivo
+                        </button>
+                        <input type="file" id="m3uFile" accept=".m3u,.m3u8" class="hidden">
+                        <button id="importUrlBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1">
+                            <i class="fas fa-cloud-download-alt mr-2"></i>Importar URL
+                        </button>
+                    </div>
+                    <p id="fileNameDisplay" class="mt-2 text-sm text-gray-400">Nenhum arquivo selecionado</p>
+                </div>
+
+                <div id="urlInputContainer" class="mb-6 hidden">
+                    <label class="block mb-2 text-sm font-medium">URL M3U</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="m3uUrl" placeholder="https://exemplo.com/lista.m3u" class="flex-1 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button id="loadUrlBtn" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
+                            <i class="fas fa-download mr-1"></i>Carregar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="listInfoContainer" class="mb-6 p-4 bg-gray-700 rounded-lg hidden">
+                    <h3 class="text-lg font-medium mb-3 text-blue-400">Informações da Lista</h3>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="text-gray-400">Data de Verificação:</div>
+                        <div id="listVerificationDate" class="font-medium"></div>
+                        <div class="text-gray-400">Status:</div>
+                        <div id="listStatus"></div>
+                        <div class="text-gray-400">Total de Canais:</div>
+                        <div id="totalChannels" class="font-medium"></div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium mb-3 text-blue-400">Filtrar por Grupo</h3>
+                    <div class="mb-4">
+                        <select id="groupFilter" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Todos os Grupos</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="clearFilterBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded flex-1">
+                            <i class="fas fa-times mr-2"></i>Limpar Filtro
+                        </button>
+                        <button id="applyFilterBtn" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded flex-1">
+                            <i class="fas fa-filter mr-2"></i>Aplicar Filtro
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium mb-3 text-blue-400">Ações em Massa</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="selectAllBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 rounded text-sm">
+                            <i class="fas fa-check-square mr-1"></i>Selecionar Todos
+                        </button>
+                        <button id="deselectAllBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 rounded text-sm">
+                            <i class="fas fa-square mr-1"></i>Desmarcar Todos
+                        </button>
+                        <button id="bulkEditBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 rounded text-sm">
+                            <i class="fas fa-edit mr-1"></i>Editar Selecionados
+                        </button>
+                        <button id="bulkDeleteBtn" class="bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-sm">
+                            <i class="fas fa-trash-alt mr-1"></i>Excluir Selecionados
+                        </button>
+                        <button id="bulkCopyBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded text-sm col-span-2">
+                            <i class="fas fa-copy mr-1"></i>Copiar Selecionados
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium mb-3 text-blue-400">Exportar</h3>
+                    <button id="exportBtn" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
+                        <i class="fas fa-file-export mr-2"></i>Exportar Lista M3U
                     </button>
                 </div>
-                <div class="aspect-w-16 aspect-h-9">
-                    <div class="w-full h-0 pb-[56.25%] relative">
-                        <div class="absolute inset-0 flex items-center justify-center bg-gray-900">
-                            <p class="text-center">Vídeo demonstrativo não disponível.<br>O arquivo local D:\Downloads\Camtasia_Videos\RTv\DemonstracaDoaplicativoRTv.mp4 não pode ser acessado.</p>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex-1">
+                <!-- Tabs -->
+                <div class="flex border-b border-gray-700 mb-4">
+                    <button id="playlistTab" class="tab-active py-2 px-4 font-medium text-lg">Biblioteca</button>
+                    <button id="linksTab" class="py-2 px-4 font-medium text-lg text-gray-400">Links Importados</button>
+                </div>
+
+                <!-- Playlist Tab Content -->
+                <div id="playlistContent" class="bg-gray-800 rounded-lg p-6 shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-blue-400">Biblioteca</h2>
+                        <div class="flex gap-2">
+                            <div class="relative">
+                                <button id="sortBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-sm flex items-center">
+                                    <i class="fas fa-sort mr-1"></i>Ordenar
+                                    <i class="fas fa-chevron-down ml-1"></i>
+                                </button>
+                                <div id="sortDropdown" class="absolute right-0 mt-1 w-48 bg-gray-700 rounded-md shadow-lg z-10 hidden">
+                                    <ul class="py-1 text-sm">
+                                        <li><a href="#" id="sortAlphaAsc" class="block px-4 py-2 hover:bg-gray-600">Título (A-Z)</a></li>
+                                        <li><a href="#" id="sortAlphaDesc" class="block px-4 py-2 hover:bg-gray-600">Título (Z-A)</a></li>
+                                        <li><a href="#" id="sortGroupAsc" class="block px-4 py-2 hover:bg-gray-600">Grupo (A-Z)</a></li>
+                                        <li><a href="#" id="sortGroupDesc" class="block px-4 py-2 hover:bg-gray-600">Grupo (Z-A)</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <span id="itemCount" class="bg-gray-700 text-gray-300 py-1 px-3 rounded text-sm">0 itens</span>
                         </div>
+                    </div>
+
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="min-w-full bg-gray-900 rounded-lg">
+                            <thead>
+                                <tr class="bg-gray-800 text-gray-400 text-left text-sm">
+                                    <th class="py-2 px-3 w-10"><input type="checkbox" id="selectAllHeader" class="rounded bg-gray-700 border-gray-600"></th>
+                                    <th class="py-2 px-3">Título</th>
+                                    <th class="py-2 px-3">Grupo</th>
+                                    <th class="py-2 px-3">Link</th>
+                                    <th class="py-2 px-3 w-16">Logo</th>
+                                    <th class="py-2 px-3 w-24">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="playlistTableBody" class="text-sm">
+                                <!-- Playlist items will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="emptyPlaylistMessage" class="text-center py-8 text-gray-400">
+                        <i class="fas fa-file-import text-4xl mb-2"></i>
+                        <p>Importe uma lista M3U para começar</p>
+                    </div>
+                </div>
+
+                <!-- Links Tab Content -->
+                <div id="linksContent" class="bg-gray-800 rounded-lg p-6 shadow-lg hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-blue-400">Links Importados</h2>
+                        <div class="flex gap-2">
+                            <button id="expandAllLinksBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-sm flex items-center">
+                                <i class="fas fa-expand-alt mr-1"></i>Expandir Links
+                            </button>
+                            <span id="linkItemCount" class="bg-gray-700 text-gray-300 py-1 px-3 rounded text-sm">0 itens</span>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="min-w-full bg-gray-900 rounded-lg">
+                            <thead>
+                                <tr class="bg-gray-800 text-gray-400 text-left text-sm">
+                                    <th class="py-2 px-3 w-10"><input type="checkbox" id="selectAllLinksHeader" class="rounded bg-gray-700 border-gray-600"></th>
+                                    <th class="py-2 px-3 w-1/3">Título</th>
+                                    <th class="py-2 px-3">Link</th>
+                                    <th class="py-2 px-3 w-24">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="linksTableBody" class="text-sm">
+                                <!-- Links will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="emptyLinksMessage" class="text-center py-8 text-gray-400">
+                        <i class="fas fa-link text-4xl mb-2"></i>
+                        <p>Nenhum link importado</p>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Main Content -->
-        <div class="bg-gray-800 bg-opacity-80 rounded-lg shadow-lg p-6">
-            <!-- Import Section -->
-            <div class="mb-6">
-                <h2 class="text-2xl font-bold mb-4 text-blue-400">Importar Lista M3U</h2>
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="flex-1">
-                        <textarea id="m3uInput" class="w-full h-32 p-3 bg-gray-700 text-white rounded-lg custom-scrollbar" placeholder="Cole o conteúdo da lista M3U aqui..."></textarea>
-                    </div>
-                    <div class="flex flex-col justify-center gap-2">
-                        <button id="importBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                            <i class="fas fa-file-import mr-2"></i>Importar
-                        </button>
-                        <label class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300 text-center cursor-pointer">
-                            <i class="fas fa-upload mr-2"></i>Carregar Arquivo
-                            <input type="file" id="fileInput" accept=".m3u,.m3u8" class="hidden">
-                        </label>
-                        <button id="exportBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                            <i class="fas fa-file-export mr-2"></i>Exportar M3U
-                        </button>
-                    </div>
-                </div>
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
+            <h2 id="editModalTitle" class="text-xl font-semibold mb-4 text-blue-400">Editar Item</h2>
+            
+            <div class="mb-4">
+                <label class="block mb-1 text-sm font-medium">Título</label>
+                <input type="text" id="editTitle" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
-
-            <!-- Tabs -->
-            <div class="mb-4 border-b border-gray-700">
-                <ul class="flex flex-wrap -mb-px">
-                    <li class="mr-2">
-                        <button id="playlistTab" class="tab-btn inline-block p-4 border-b-2 border-blue-500 rounded-t-lg active text-blue-500" aria-current="page">
-                            <i class="fas fa-list mr-2"></i>Biblioteca
-                        </button>
-                    </li>
-                    <li class="mr-2">
-                        <button id="linksTab" class="tab-btn inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-300 hover:border-gray-300">
-                            <i class="fas fa-link mr-2"></i>Links Importados
-                        </button>
-                    </li>
-                </ul>
+            
+            <div class="mb-4">
+                <label class="block mb-1 text-sm font-medium">Grupo</label>
+                <input type="text" id="editGroup" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
+            
+            <div class="mb-4">
+                <label class="block mb-1 text-sm font-medium">Link</label>
+                <input type="text" id="editLink" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-1 text-sm font-medium">Logo URL</label>
+                <input type="text" id="editLogo" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="flex justify-end gap-2 mt-6">
+                <button id="cancelEditBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">
+                    Cancelar
+                </button>
+                <button id="saveEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
+                    Salvar
+                </button>
+            </div>
+        </div>
+    </div>
 
-            <!-- Search and Filter -->
-            <div class="flex flex-col md:flex-row gap-4 mb-4">
-                <div class="flex-1">
-                    <div class="relative">
-                        <input type="text" id="searchInput" class="w-full p-3 pl-10 bg-gray-700 text-white rounded-lg" placeholder="Pesquisar...">
-                        <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
-                    </div>
+    <!-- Bulk Edit Modal -->
+    <div id="bulkEditModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
+            <h2 class="text-xl font-semibold mb-4 text-blue-400">Editar em Massa</h2>
+            
+            <div class="mb-4">
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" id="bulkEditTitleCheck" class="mr-2 rounded bg-gray-700 border-gray-600">
+                    <label class="text-sm font-medium">Editar Título</label>
                 </div>
                 <div class="flex gap-2">
-                    <div class="dropdown relative">
-                        <button id="sortBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                            <i class="fas fa-sort-alpha-down mr-2"></i>Ordenar A-Z
-                        </button>
-                        <div id="sortDropdown" class="dropdown-menu absolute hidden right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg z-10">
-                            <button id="sortNameAsc" class="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-600">
-                                <i class="fas fa-sort-alpha-down mr-2"></i>Nome (A-Z)
-                            </button>
-                            <button id="sortNameDesc" class="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-600">
-                                <i class="fas fa-sort-alpha-up mr-2"></i>Nome (Z-A)
-                            </button>
-                            <button id="sortGroupAsc" class="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-600">
-                                <i class="fas fa-layer-group mr-2"></i>Grupo (A-Z)
-                            </button>
-                            <button id="sortGroupDesc" class="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-600">
-                                <i class="fas fa-layer-group fa-flip-vertical mr-2"></i>Grupo (Z-A)
-                            </button>
-                        </div>
-                    </div>
-                    <button id="massEditBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                        <i class="fas fa-edit mr-2"></i>Editar em Massa
-                    </button>
-                    <button id="massCopyBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                        <i class="fas fa-copy mr-2"></i>Copiar em Massa
-                    </button>
+                    <select id="bulkEditTitleAction" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="replace">Substituir</option>
+                        <option value="prefix">Adicionar Prefixo</option>
+                        <option value="suffix">Adicionar Sufixo</option>
+                    </select>
+                    <input type="text" id="bulkEditTitleValue" placeholder="Valor" class="flex-1 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>
-
-            <!-- Playlist Tab Content -->
-            <div id="playlistContent" class="tab-content active">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-300">
-                        <thead class="text-xs uppercase bg-gray-700 text-gray-300">
-                            <tr>
-                                <th scope="col" class="px-6 py-3">
-                                    <div class="flex items-center">
-                                        <input type="checkbox" id="selectAllPlaylist" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
-                                        <span class="ml-2">Nome</span>
-                                    </div>
-                                </th>
-                                <th scope="col" class="px-6 py-3">Grupo</th>
-                                <th scope="col" class="px-6 py-3">Logo</th>
-                                <th scope="col" class="px-6 py-3">Link</th>
-                                <th scope="col" class="px-6 py-3">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="playlistTable">
-                            <!-- Playlist items will be added here -->
-                        </tbody>
-                    </table>
+            
+            <div class="mb-4">
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" id="bulkEditGroupCheck" class="mr-2 rounded bg-gray-700 border-gray-600">
+                    <label class="text-sm font-medium">Editar Grupo</label>
                 </div>
-                <div id="playlistEmpty" class="text-center py-8 text-gray-400">
-                    <i class="fas fa-list-ul text-4xl mb-3"></i>
-                    <p>Nenhum item na biblioteca. Importe uma lista M3U para começar.</p>
+                <div class="flex gap-2">
+                    <select id="bulkEditGroupAction" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="replace">Substituir</option>
+                        <option value="prefix">Adicionar Prefixo</option>
+                        <option value="suffix">Adicionar Sufixo</option>
+                    </select>
+                    <input type="text" id="bulkEditGroupValue" placeholder="Valor" class="flex-1 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>
-
-            <!-- Links Tab Content -->
-            <div id="linksContent" class="tab-content">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-300">
-                        <thead class="text-xs uppercase bg-gray-700 text-gray-300">
-                            <tr>
-                                <th scope="col" class="px-6 py-3">
-                                    <div class="flex items-center">
-                                        <input type="checkbox" id="selectAllLinks" class="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
-                                        <span class="ml-2">Nome</span>
-                                    </div>
-                                </th>
-                                <th scope="col" class="px-6 py-3">Link</th>
-                                <th scope="col" class="px-6 py-3">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="linksTable">
-                            <!-- Links will be added here -->
-                        </tbody>
-                    </table>
+            
+            <div class="mb-4">
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" id="bulkEditLinkCheck" class="mr-2 rounded bg-gray-700 border-gray-600">
+                    <label class="text-sm font-medium">Editar Link</label>
                 </div>
-                <div id="linksEmpty" class="text-center py-8 text-gray-400">
-                    <i class="fas fa-link text-4xl mb-3"></i>
-                    <p>Nenhum link importado. Importe uma lista M3U para começar.</p>
+                <div class="flex gap-2">
+                    <select id="bulkEditLinkAction" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="replace">Substituir</option>
+                        <option value="prefix">Adicionar Prefixo</option>
+                        <option value="suffix">Adicionar Sufixo</option>
+                        <option value="domain">Mudar Domínio</option>
+                    </select>
+                    <input type="text" id="bulkEditLinkValue" placeholder="Valor" class="flex-1 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
+            </div>
+            
+            <div class="mb-4">
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" id="bulkEditLogoCheck" class="mr-2 rounded bg-gray-700 border-gray-600">
+                    <label class="text-sm font-medium">Editar Logo</label>
+                </div>
+                <div class="flex gap-2">
+                    <select id="bulkEditLogoAction" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="replace">Substituir</option>
+                        <option value="prefix">Adicionar Prefixo</option>
+                        <option value="suffix">Adicionar Sufixo</option>
+                        <option value="domain">Mudar Domínio</option>
+                    </select>
+                    <input type="text" id="bulkEditLogoValue" placeholder="Valor" class="flex-1 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-2 mt-6">
+                <button id="cancelBulkEditBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">
+                    Cancelar
+                </button>
+                <button id="saveBulkEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
+                    Aplicar a <span id="selectedItemsCount">0</span> itens
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- Mass Edit Modal -->
-        <div id="massEditModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-            <div class="bg-gray-800 p-6 rounded-lg w-full max-w-4xl">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">Editar Links em Massa</h3>
-                    <button id="closeMassEditBtn" class="text-gray-400 hover:text-white">
-                        <i class="fas fa-times text-2xl"></i>
+    <!-- Copy Selected Modal -->
+    <div id="copySelectedModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
+            <h2 class="text-xl font-semibold mb-4 text-blue-400">Copiar Selecionados</h2>
+            
+            <div class="mb-4">
+                <label class="block mb-2 text-sm font-medium">Formato</label>
+                <div class="flex gap-2 mb-4">
+                    <button id="copyFormatM3u" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1">
+                        <i class="fas fa-file-alt mr-1"></i>M3U
+                    </button>
+                    <button id="copyFormatLinks" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1">
+                        <i class="fas fa-link mr-1"></i>Apenas Links
+                    </button>
+                    <button id="copyFormatJson" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1">
+                        <i class="fas fa-code mr-1"></i>JSON
                     </button>
                 </div>
-                <div class="mb-4">
-                    <label class="block mb-2">Encontrar:</label>
-                    <input type="text" id="findText" class="w-full p-3 bg-gray-700 text-white rounded-lg" placeholder="Texto a ser substituído...">
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-2">Substituir por:</label>
-                    <input type="text" id="replaceText" class="w-full p-3 bg-gray-700 text-white rounded-lg" placeholder="Novo texto...">
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-2">Aplicar em:</label>
-                    <div class="flex flex-wrap gap-4">
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" id="applyToNames" class="form-checkbox h-5 w-5 text-blue-600" checked>
-                            <span class="ml-2">Nomes</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" id="applyToLinks" class="form-checkbox h-5 w-5 text-blue-600" checked>
-                            <span class="ml-2">Links</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" id="applyToGroups" class="form-checkbox h-5 w-5 text-blue-600">
-                            <span class="ml-2">Grupos</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" id="applyToLogos" class="form-checkbox h-5 w-5 text-blue-600">
-                            <span class="ml-2">Logos</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button id="applyMassEditBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                        <i class="fas fa-check mr-2"></i>Aplicar
-                    </button>
-                    <button id="cancelMassEditBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                        <i class="fas fa-times mr-2"></i>Cancelar
-                    </button>
-                </div>
+                
+                <textarea id="copyTextArea" class="w-full h-64 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono" readonly></textarea>
+            </div>
+            
+            <div class="flex justify-end gap-2 mt-6">
+                <button id="closeCopyModalBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">
+                    Fechar
+                </button>
+                <button id="copyToClipboardBtn" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
+                    <i class="fas fa-copy mr-1"></i>Copiar para Área de Transferência
+                </button>
             </div>
         </div>
-
-        <!-- Mass Copy Modal -->
-        <div id="massCopyModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-            <div class="bg-gray-800 p-6 rounded-lg w-full max-w-4xl">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">Copiar Links em Massa</h3>
-                    <button id="closeMassCopyBtn" class="text-gray-400 hover:text-white">
-                        <i class="fas fa-times text-2xl"></i>
-                    </button>
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-2">Formato de cópia:</label>
-                    <div class="flex gap-4 mb-4">
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="copyFormat" id="copyFormatLinks" class="form-radio h-5 w-5 text-blue-600" checked>
-                            <span class="ml-2">Apenas Links</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="copyFormat" id="copyFormatNameLinks" class="form-radio h-5 w-5 text-blue-600">
-                            <span class="ml-2">Nome + Link</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="copyFormat" id="copyFormatFull" class="form-radio h-5 w-5 text-blue-600">
-                            <span class="ml-2">Formato Completo</span>
-                        </label>
-                    </div>
-                    <textarea id="massCopyText" class="w-full h-64 p-3 bg-gray-700 text-white rounded-lg custom-scrollbar" readonly></textarea>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button id="copyToClipboardBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                        <i class="fas fa-clipboard mr-2"></i>Copiar para Área de Transferência
-                    </button>
-                    <button id="cancelMassCopyBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                        <i class="fas fa-times mr-2"></i>Fechar
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Export Modal -->
-        <div id="exportModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-            <div class="bg-gray-800 p-6 rounded-lg w-full max-w-4xl">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">Exportar Lista M3U</h3>
-                    <button id="closeExportBtn" class="text-gray-400 hover:text-white">
-                        <i class="fas fa-times text-2xl"></i>
-                    </button>
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-2">Nome do arquivo:</label>
-                    <input type="text" id="exportFileName" class="w-full p-3 bg-gray-700 text-white rounded-lg" value="minha_lista.m3u" placeholder="Nome do arquivo...">
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-2">Opções de exportação:</label>
-                    <div class="flex flex-wrap gap-4">
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" id="exportSelected" class="form-checkbox h-5 w-5 text-blue-600">
-                            <span class="ml-2">Exportar apenas itens selecionados</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" id="includeHeader" class="form-checkbox h-5 w-5 text-blue-600" checked>
-                            <span class="ml-2">Incluir cabeçalho M3U</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-2">Prévia:</label>
-                    <textarea id="exportPreview" class="w-full h-64 p-3 bg-gray-700 text-white rounded-lg custom-scrollbar" readonly></textarea>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button id="downloadM3UBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                        <i class="fas fa-download mr-2"></i>Baixar Arquivo M3U
-                    </button>
-                    <button id="cancelExportBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                        <i class="fas fa-times mr-2"></i>Cancelar
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Toast Notification -->
-        <div id="toast" class="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg transform transition-transform duration-300 translate-y-20 opacity-0">
-            <div class="flex items-center">
-                <i class="fas fa-check-circle mr-2"></i>
-                <span id="toastMessage">Link copiado com sucesso!</span>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <footer class="mt-8 text-center text-gray-400 text-sm">
-            <p>© 2023 Tekinformática - Todos os direitos reservados</p>
-        </footer>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Elements
+            // Data storage
+            let playlistItems = [];
+            let filteredItems = [];
+            let currentEditingItem = null;
+            let isFiltered = false;
+            let uniqueGroups = new Set();
+            let linksExpanded = false;
+            let lastVerificationDate = null;
+
+            // DOM Elements
+            const fileInput = document.getElementById('m3uFile');
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            const urlInput = document.getElementById('m3uUrl');
+            const urlInputContainer = document.getElementById('urlInputContainer');
+            const importFileBtn = document.getElementById('importFileBtn');
+            const importUrlBtn = document.getElementById('importUrlBtn');
+            const loadUrlBtn = document.getElementById('loadUrlBtn');
+            const groupFilter = document.getElementById('groupFilter');
+            const applyFilterBtn = document.getElementById('applyFilterBtn');
+            const clearFilterBtn = document.getElementById('clearFilterBtn');
             const playlistTab = document.getElementById('playlistTab');
             const linksTab = document.getElementById('linksTab');
             const playlistContent = document.getElementById('playlistContent');
             const linksContent = document.getElementById('linksContent');
-            const playlistTable = document.getElementById('playlistTable');
-            const linksTable = document.getElementById('linksTable');
-            const playlistEmpty = document.getElementById('playlistEmpty');
-            const linksEmpty = document.getElementById('linksEmpty');
-            const m3uInput = document.getElementById('m3uInput');
-            const importBtn = document.getElementById('importBtn');
-            const fileInput = document.getElementById('fileInput');
-            const searchInput = document.getElementById('searchInput');
+            const playlistTableBody = document.getElementById('playlistTableBody');
+            const linksTableBody = document.getElementById('linksTableBody');
+            const emptyPlaylistMessage = document.getElementById('emptyPlaylistMessage');
+            const emptyLinksMessage = document.getElementById('emptyLinksMessage');
+            const itemCount = document.getElementById('itemCount');
+            const linkItemCount = document.getElementById('linkItemCount');
             const sortBtn = document.getElementById('sortBtn');
             const sortDropdown = document.getElementById('sortDropdown');
-            const massEditBtn = document.getElementById('massEditBtn');
-            const massEditModal = document.getElementById('massEditModal');
-            const closeMassEditBtn = document.getElementById('closeMassEditBtn');
-            const applyMassEditBtn = document.getElementById('applyMassEditBtn');
-            const cancelMassEditBtn = document.getElementById('cancelMassEditBtn');
-            const findText = document.getElementById('findText');
-            const replaceText = document.getElementById('replaceText');
-            const showVideoBtn = document.getElementById('showVideoBtn');
-            const videoModal = document.getElementById('videoModal');
-            const closeVideoBtn = document.getElementById('closeVideoBtn');
-            const massCopyBtn = document.getElementById('massCopyBtn');
-            const massCopyModal = document.getElementById('massCopyModal');
-            const closeMassCopyBtn = document.getElementById('closeMassCopyBtn');
-            const cancelMassCopyBtn = document.getElementById('cancelMassCopyBtn');
-            const massCopyText = document.getElementById('massCopyText');
-            const copyToClipboardBtn = document.getElementById('copyToClipboardBtn');
-            const selectAllPlaylist = document.getElementById('selectAllPlaylist');
-            const selectAllLinks = document.getElementById('selectAllLinks');
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
+            const sortAlphaAsc = document.getElementById('sortAlphaAsc');
+            const sortAlphaDesc = document.getElementById('sortAlphaDesc');
+            const sortGroupAsc = document.getElementById('sortGroupAsc');
+            const sortGroupDesc = document.getElementById('sortGroupDesc');
+            const expandAllLinksBtn = document.getElementById('expandAllLinksBtn');
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            const deselectAllBtn = document.getElementById('deselectAllBtn');
+            const bulkEditBtn = document.getElementById('bulkEditBtn');
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            const bulkCopyBtn = document.getElementById('bulkCopyBtn');
             const exportBtn = document.getElementById('exportBtn');
-            const exportModal = document.getElementById('exportModal');
-            const closeExportBtn = document.getElementById('closeExportBtn');
-            const cancelExportBtn = document.getElementById('cancelExportBtn');
-            const exportFileName = document.getElementById('exportFileName');
-            const exportSelected = document.getElementById('exportSelected');
-            const includeHeader = document.getElementById('includeHeader');
-            const exportPreview = document.getElementById('exportPreview');
-            const downloadM3UBtn = document.getElementById('downloadM3UBtn');
+            const selectAllHeader = document.getElementById('selectAllHeader');
+            const selectAllLinksHeader = document.getElementById('selectAllLinksHeader');
+            
+            // List info elements
+            const listInfoContainer = document.getElementById('listInfoContainer');
+            const listVerificationDate = document.getElementById('listVerificationDate');
+            const listStatus = document.getElementById('listStatus');
+            const totalChannels = document.getElementById('totalChannels');
+            
+            // Modals
+            const editModal = document.getElementById('editModal');
+            const editModalTitle = document.getElementById('editModalTitle');
+            const editTitle = document.getElementById('editTitle');
+            const editGroup = document.getElementById('editGroup');
+            const editLink = document.getElementById('editLink');
+            const editLogo = document.getElementById('editLogo');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            const saveEditBtn = document.getElementById('saveEditBtn');
+            
+            const bulkEditModal = document.getElementById('bulkEditModal');
+            const bulkEditTitleCheck = document.getElementById('bulkEditTitleCheck');
+            const bulkEditGroupCheck = document.getElementById('bulkEditGroupCheck');
+            const bulkEditLinkCheck = document.getElementById('bulkEditLinkCheck');
+            const bulkEditLogoCheck = document.getElementById('bulkEditLogoCheck');
+            const selectedItemsCount = document.getElementById('selectedItemsCount');
+            const cancelBulkEditBtn = document.getElementById('cancelBulkEditBtn');
+            const saveBulkEditBtn = document.getElementById('saveBulkEditBtn');
+            
+            // Copy Selected Modal
+            const copySelectedModal = document.getElementById('copySelectedModal');
+            const copyFormatM3u = document.getElementById('copyFormatM3u');
+            const copyFormatLinks = document.getElementById('copyFormatLinks');
+            const copyFormatJson = document.getElementById('copyFormatJson');
+            const copyTextArea = document.getElementById('copyTextArea');
+            const closeCopyModalBtn = document.getElementById('closeCopyModalBtn');
+            const copyToClipboardBtn = document.getElementById('copyToClipboardBtn');
 
-            // Store playlist items
-            let playlistItems = [];
-            let currentSortField = 'name';
-            let currentSortDirection = 'asc';
-
-            // Tab switching
-            playlistTab.addEventListener('click', function() {
-                activateTab(playlistTab, playlistContent);
-            });
-
-            linksTab.addEventListener('click', function() {
-                activateTab(linksTab, linksContent);
-            });
-
-            function activateTab(tab, content) {
-                // Remove active class from all tabs and contents
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    btn.classList.remove('active', 'text-blue-500', 'border-blue-500');
-                    btn.classList.add('border-transparent');
-                });
-                document.querySelectorAll('.tab-content').forEach(c => {
-                    c.classList.remove('active');
-                });
-
-                // Add active class to selected tab and content
-                tab.classList.add('active', 'text-blue-500', 'border-blue-500');
-                tab.classList.remove('border-transparent');
-                content.classList.add('active');
-            }
-
-            // Import M3U
-            importBtn.addEventListener('click', function() {
-                const m3uContent = m3uInput.value.trim();
-                if (m3uContent) {
-                    parseM3U(m3uContent);
+            // Event Listeners
+            fileInput.addEventListener('change', handleFileSelect);
+            importFileBtn.addEventListener('click', () => fileInput.click());
+            importUrlBtn.addEventListener('click', toggleUrlInput);
+            loadUrlBtn.addEventListener('click', handleUrlImport);
+            applyFilterBtn.addEventListener('click', applyFilter);
+            clearFilterBtn.addEventListener('click', clearFilter);
+            playlistTab.addEventListener('click', () => switchTab('playlist'));
+            linksTab.addEventListener('click', () => switchTab('links'));
+            
+            // Sort dropdown
+            sortBtn.addEventListener('click', toggleSortDropdown);
+            sortAlphaAsc.addEventListener('click', () => sortItems('title', 'asc'));
+            sortAlphaDesc.addEventListener('click', () => sortItems('title', 'desc'));
+            sortGroupAsc.addEventListener('click', () => sortItems('group', 'asc'));
+            sortGroupDesc.addEventListener('click', () => sortItems('group', 'desc'));
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!sortBtn.contains(event.target) && !sortDropdown.contains(event.target)) {
+                    sortDropdown.classList.add('hidden');
                 }
             });
+            
+            expandAllLinksBtn.addEventListener('click', toggleExpandLinks);
+            selectAllBtn.addEventListener('click', selectAllItems);
+            deselectAllBtn.addEventListener('click', deselectAllItems);
+            bulkEditBtn.addEventListener('click', showBulkEditModal);
+            bulkDeleteBtn.addEventListener('click', deleteBulkItems);
+            bulkCopyBtn.addEventListener('click', showCopySelectedModal);
+            exportBtn.addEventListener('click', exportM3U);
+            selectAllHeader.addEventListener('change', toggleSelectAllPlaylist);
+            selectAllLinksHeader.addEventListener('change', toggleSelectAllLinks);
+            
+            cancelEditBtn.addEventListener('click', closeEditModal);
+            saveEditBtn.addEventListener('click', saveEdit);
+            
+            cancelBulkEditBtn.addEventListener('click', closeBulkEditModal);
+            saveBulkEditBtn.addEventListener('click', saveBulkEdit);
+            
+            // Copy Selected Modal
+            copyFormatM3u.addEventListener('click', () => formatCopyText('m3u'));
+            copyFormatLinks.addEventListener('click', () => formatCopyText('links'));
+            copyFormatJson.addEventListener('click', () => formatCopyText('json'));
+            closeCopyModalBtn.addEventListener('click', closeCopySelectedModal);
+            copyToClipboardBtn.addEventListener('click', copyToClipboard);
 
-            // File upload
-            fileInput.addEventListener('change', function(e) {
+            // Functions
+            function toggleUrlInput() {
+                urlInputContainer.classList.toggle('hidden');
+                if (!urlInputContainer.classList.contains('hidden')) {
+                    urlInput.focus();
+                }
+            }
+
+            function handleFileSelect(e) {
                 const file = e.target.files[0];
                 if (file) {
+                    fileNameDisplay.textContent = file.name;
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        m3uInput.value = e.target.result;
+                        parseM3U(e.target.result);
                     };
                     reader.readAsText(file);
                 }
-            });
+            }
 
-            // Parse M3U content
+            function handleUrlImport() {
+                const url = urlInput.value.trim();
+                if (!url) {
+                    alert('Por favor, insira uma URL válida');
+                    return;
+                }
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erro ao carregar o arquivo');
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        parseM3U(data);
+                        urlInput.value = '';
+                        urlInputContainer.classList.add('hidden');
+                    })
+                    .catch(error => {
+                        alert('Erro ao importar: ' + error.message);
+                    });
+            }
+
             function parseM3U(content) {
-                playlistItems = [];
                 const lines = content.split('\n');
-                
                 let currentItem = null;
+                
+                playlistItems = [];
+                uniqueGroups = new Set();
+                
+                // Check for verification date in the content
+                checkVerificationDate(content);
                 
                 for (let i = 0; i < lines.length; i++) {
                     const line = lines[i].trim();
                     
                     if (line.startsWith('#EXTINF:')) {
+                        // Parse the EXTINF line
                         currentItem = {
-                            name: '',
+                            title: '',
                             group: '',
                             logo: '',
-                            link: ''
+                            link: '',
+                            selected: false
                         };
                         
-                        // Extract attributes
-                        const nameMatch = line.match(/tvg-name="([^"]+)"/);
-                        if (nameMatch) currentItem.name = nameMatch[1];
-                        
-                        const logoMatch = line.match(/tvg-logo="([^"]+)"/);
-                        if (logoMatch) currentItem.logo = logoMatch[1];
-                        
-                        const groupMatch = line.match(/group-title="([^"]+)"/);
-                        if (groupMatch) currentItem.group = groupMatch[1];
-                        
-                        // Extract title if present after the attributes
+                        // Extract title
                         const titleMatch = line.match(/,(.+)$/);
-                        if (titleMatch && !currentItem.name) currentItem.name = titleMatch[1].trim();
+                        if (titleMatch && titleMatch[1]) {
+                            currentItem.title = titleMatch[1].trim();
+                        }
+                        
+                        // Extract group
+                        const groupMatch = line.match(/group-title="([^"]+)"/);
+                        if (groupMatch && groupMatch[1]) {
+                            currentItem.group = groupMatch[1];
+                            uniqueGroups.add(groupMatch[1]);
+                        }
+                        
+                        // Extract logo
+                        const logoMatch = line.match(/tvg-logo="([^"]+)"/);
+                        if (logoMatch && logoMatch[1]) {
+                            currentItem.logo = logoMatch[1];
+                        }
                     } else if (line && !line.startsWith('#') && currentItem) {
+                        // This is the URL line
                         currentItem.link = line;
                         playlistItems.push(currentItem);
                         currentItem = null;
                     }
                 }
                 
-                sortItems();
-                renderPlaylist();
-                renderLinks();
+                updateGroupFilter();
+                updatePlaylistTable();
+                updateLinksTable();
+                updateListInfo();
+                switchTab('playlist');
             }
 
-            // Sort items
-            function sortItems() {
-                playlistItems.sort((a, b) => {
-                    let valueA, valueB;
-                    
-                    if (currentSortField === 'name') {
-                        valueA = (a.name || '').toLowerCase();
-                        valueB = (b.name || '').toLowerCase();
-                    } else if (currentSortField === 'group') {
-                        valueA = (a.group || '').toLowerCase();
-                        valueB = (b.group || '').toLowerCase();
+            function checkVerificationDate(content) {
+                // Look for a verification date in the M3U file
+                // Common formats include:
+                // #EXTM3U date="2023-05-15" or #EXTM3U updated="2023-05-15"
+                const dateMatch = content.match(/#EXTM3U.*(?:date|updated|verification)="([^"]+)"/i);
+                
+                if (dateMatch && dateMatch[1]) {
+                    try {
+                        lastVerificationDate = new Date(dateMatch[1]);
+                    } catch (e) {
+                        lastVerificationDate = null;
                     }
+                } else {
+                    // If no date found, use current date as import date
+                    lastVerificationDate = new Date();
+                }
+                
+                // Show the list info container
+                listInfoContainer.classList.remove('hidden');
+            }
+
+            function updateListInfo() {
+                if (lastVerificationDate) {
+                    // Format the date
+                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                    listVerificationDate.textContent = lastVerificationDate.toLocaleDateString('pt-BR', options);
                     
-                    if (currentSortDirection === 'asc') {
-                        return valueA.localeCompare(valueB);
+                    // Calculate days since verification
+                    const daysSinceVerification = Math.floor((new Date() - lastVerificationDate) / (1000 * 60 * 60 * 24));
+                    
+                    // Set status based on days since verification
+                    if (daysSinceVerification <= 3) {
+                        listStatus.innerHTML = '<span class="badge badge-success">Atualizada</span>';
+                    } else if (daysSinceVerification <= 7) {
+                        listStatus.innerHTML = '<span class="badge badge-warning">Moderada</span>';
                     } else {
-                        return valueB.localeCompare(valueA);
+                        listStatus.innerHTML = '<span class="badge badge-danger">Desatualizada</span>';
+                    }
+                } else {
+                    listVerificationDate.textContent = "Não disponível";
+                    listStatus.innerHTML = '<span class="badge badge-warning">Desconhecido</span>';
+                }
+                
+                // Update total channels
+                totalChannels.textContent = playlistItems.length;
+            }
+
+            function updateGroupFilter() {
+                // Clear existing options
+                groupFilter.innerHTML = '<option value="">Todos os Grupos</option>';
+                
+                // Add sorted group options
+                [...uniqueGroups].sort().forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group;
+                    option.textContent = group;
+                    groupFilter.appendChild(option);
+                });
+            }
+
+            function updatePlaylistTable() {
+                const items = isFiltered ? filteredItems : playlistItems;
+                playlistTableBody.innerHTML = '';
+                
+                if (items.length === 0) {
+                    emptyPlaylistMessage.classList.remove('hidden');
+                } else {
+                    emptyPlaylistMessage.classList.add('hidden');
+                    
+                    items.forEach((item, index) => {
+                        const row = document.createElement('tr');
+                        row.className = index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800';
+                        
+                        // Create logo element
+                        let logoElement = '';
+                        if (item.logo) {
+                            logoElement = `
+                                <img src="${escapeHtml(item.logo)}" alt="Logo" class="logo-preview" 
+                                    onerror="this.onerror=null; this.innerHTML='<i class=\'fas fa-image\'></i>'; this.classList.add('logo-placeholder');">
+                            `;
+                        } else {
+                            logoElement = `
+                                <div class="logo-placeholder">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            `;
+                        }
+                        
+                        // Create link cell with truncation
+                        const linkCell = `
+                            <div class="flex items-center">
+                                <span class="link-cell" title="${escapeHtml(item.link)}">${escapeHtml(item.link)}</span>
+                                <button class="copy-link-btn ml-2 bg-blue-600 hover:bg-blue-700 text-white p-1 rounded tooltip" 
+                                    data-link="${escapeHtml(item.link)}">
+                                    <i class="fas fa-copy"></i>
+                                    <span class="tooltiptext">Copiar</span>
+                                </button>
+                            </div>
+                        `;
+                        
+                        row.innerHTML = `
+                            <td class="py-2 px-3">
+                                <input type="checkbox" class="item-checkbox rounded bg-gray-700 border-gray-600" 
+                                    data-index="${index}" ${item.selected ? 'checked' : ''}>
+                            </td>
+                            <td class="py-2 px-3">${escapeHtml(item.title)}</td>
+                            <td class="py-2 px-3">${escapeHtml(item.group)}</td>
+                            <td class="py-2 px-3">${linkCell}</td>
+                            <td class="py-2 px-3 text-center">${logoElement}</td>
+                            <td class="py-2 px-3">
+                                <div class="flex space-x-1">
+                                    <button class="edit-btn bg-yellow-600 hover:bg-yellow-700 text-white p-1 rounded tooltip" data-index="${index}">
+                                        <i class="fas fa-edit"></i>
+                                        <span class="tooltiptext">Editar</span>
+                                    </button>
+                                    <button class="delete-btn bg-red-600 hover:bg-red-700 text-white p-1 rounded tooltip" data-index="${index}">
+                                        <i class="fas fa-trash-alt"></i>
+                                        <span class="tooltiptext">Excluir</span>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                        
+                        playlistTableBody.appendChild(row);
+                    });
+                    
+                    // Add event listeners to the new buttons
+                    document.querySelectorAll('.edit-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            showEditModal(items[index], index);
+                        });
+                    });
+                    
+                    document.querySelectorAll('.delete-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            deleteItem(index);
+                        });
+                    });
+                    
+                    document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+                        checkbox.addEventListener('change', function() {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            items[index].selected = this.checked;
+                        });
+                    });
+                    
+                    document.querySelectorAll('.copy-link-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const link = this.getAttribute('data-link');
+                            navigator.clipboard.writeText(link).then(() => {
+                                const originalText = this.innerHTML;
+                                this.innerHTML = '<i class="fas fa-check"></i>';
+                                setTimeout(() => {
+                                    this.innerHTML = originalText;
+                                }, 1000);
+                            });
+                        });
+                    });
+                }
+                
+                itemCount.textContent = `${items.length} itens`;
+                updateSelectAllCheckbox();
+            }
+
+            function updateLinksTable() {
+                const items = isFiltered ? filteredItems : playlistItems;
+                linksTableBody.innerHTML = '';
+                
+                if (items.length === 0) {
+                    emptyLinksMessage.classList.remove('hidden');
+                } else {
+                    emptyLinksMessage.classList.add('hidden');
+                    
+                    items.forEach((item, index) => {
+                        const row = document.createElement('tr');
+                        row.className = index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800';
+                        
+                        row.innerHTML = `
+                            <td class="py-2 px-3">
+                                <input type="checkbox" class="link-item-checkbox rounded bg-gray-700 border-gray-600" 
+                                    data-index="${index}" ${item.selected ? 'checked' : ''}>
+                            </td>
+                            <td class="py-2 px-3">${escapeHtml(item.title)}</td>
+                            <td class="py-2 px-3">
+                                <div class="flex items-center">
+                                    <span class="link-text ${linksExpanded ? 'link-expanded' : 'link-cell'}">${escapeHtml(item.link)}</span>
+                                    <button class="copy-btn ml-2 bg-blue-600 hover:bg-blue-700 text-white p-1 rounded tooltip" 
+                                        data-link="${escapeHtml(item.link)}">
+                                        <i class="fas fa-copy"></i>
+                                        <span class="tooltiptext">Copiar</span>
+                                    </button>
+                                </div>
+                            </td>
+                            <td class="py-2 px-3">
+                                <div class="flex space-x-1">
+                                    <button class="edit-link-btn bg-yellow-600 hover:bg-yellow-700 text-white p-1 rounded tooltip" data-index="${index}">
+                                        <i class="fas fa-edit"></i>
+                                        <span class="tooltiptext">Editar</span>
+                                    </button>
+                                    <button class="delete-link-btn bg-red-600 hover:bg-red-700 text-white p-1 rounded tooltip" data-index="${index}">
+                                        <i class="fas fa-trash-alt"></i>
+                                        <span class="tooltiptext">Excluir</span>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                        
+                        linksTableBody.appendChild(row);
+                    });
+                    
+                    // Add event listeners to the new buttons
+                    document.querySelectorAll('.copy-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const link = this.getAttribute('data-link');
+                            navigator.clipboard.writeText(link).then(() => {
+                                const originalText = this.innerHTML;
+                                this.innerHTML = '<i class="fas fa-check"></i>';
+                                setTimeout(() => {
+                                    this.innerHTML = originalText;
+                                }, 1000);
+                            });
+                        });
+                    });
+                    
+                    document.querySelectorAll('.edit-link-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            showEditModal(items[index], index);
+                        });
+                    });
+                    
+                    document.querySelectorAll('.delete-link-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            deleteItem(index);
+                        });
+                    });
+                    
+                    document.querySelectorAll('.link-item-checkbox').forEach(checkbox => {
+                        checkbox.addEventListener('change', function() {
+                            const index = parseInt(this.getAttribute('data-index'));
+                            items[index].selected = this.checked;
+                        });
+                    });
+                }
+                
+                linkItemCount.textContent = `${items.length} itens`;
+                updateSelectAllLinksCheckbox();
+                
+                // Update expand button text
+                expandAllLinksBtn.innerHTML = linksExpanded ? 
+                    '<i class="fas fa-compress-alt mr-1"></i>Comprimir Links' : 
+                    '<i class="fas fa-expand-alt mr-1"></i>Expandir Links';
+            }
+
+            function toggleExpandLinks() {
+                linksExpanded = !linksExpanded;
+                updateLinksTable();
+            }
+
+            function toggleSortDropdown() {
+                sortDropdown.classList.toggle('hidden');
+            }
+
+            function sortItems(field, direction) {
+                const items = isFiltered ? filteredItems : playlistItems;
+                
+                items.sort((a, b) => {
+                    if (direction === 'asc') {
+                        return a[field].localeCompare(b[field]);
+                    } else {
+                        return b[field].localeCompare(a[field]);
                     }
                 });
+                
+                updatePlaylistTable();
+                updateLinksTable();
+                sortDropdown.classList.add('hidden');
             }
 
-            // Render playlist
-            function renderPlaylist(items = playlistItems) {
-                playlistTable.innerHTML = '';
+            function switchTab(tab) {
+                if (tab === 'playlist') {
+                    playlistTab.classList.add('tab-active');
+                    playlistTab.classList.remove('text-gray-400');
+                    linksTab.classList.remove('tab-active');
+                    linksTab.classList.add('text-gray-400');
+                    playlistContent.classList.remove('hidden');
+                    linksContent.classList.add('hidden');
+                } else {
+                    linksTab.classList.add('tab-active');
+                    linksTab.classList.remove('text-gray-400');
+                    playlistTab.classList.remove('tab-active');
+                    playlistTab.classList.add('text-gray-400');
+                    linksContent.classList.remove('hidden');
+                    playlistContent.classList.add('hidden');
+                }
+            }
+
+            function applyFilter() {
+                const selectedGroup = groupFilter.value;
                 
-                if (items.length === 0) {
-                    playlistEmpty.classList.remove('hidden');
+                if (!selectedGroup) {
+                    clearFilter();
                     return;
                 }
                 
-                playlistEmpty.classList.add('hidden');
+                filteredItems = playlistItems.filter(item => {
+                    return item.group === selectedGroup;
+                });
                 
-                items.forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    row.className = index % 2 === 0 ? 'bg-gray-800' : 'bg-gray-700';
-                    
-                    row.innerHTML = `
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <input type="checkbox" class="playlist-item-checkbox w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500" data-index="${index}">
-                                <span class="ml-2">${item.name || 'Sem nome'}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">${item.group || 'Sem grupo'}</td>
-                        <td class="px-6 py-4">
-                            ${item.logo ? `<img src="${item.logo}" alt="Logo" class="h-8 w-auto">` : 'Sem logo'}
-                        </td>
-                        <td class="px-6 py-4 truncate max-w-xs" title="${item.link}">${item.link}</td>
-                        <td class="px-6 py-4">
-                            <button class="text-blue-400 hover:text-blue-300 mr-2" onclick="editItem(${index})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="text-red-400 hover:text-red-300 mr-2" onclick="deleteItem(${index})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            <button class="text-green-400 hover:text-green-300" onclick="copyItemLink(${index})">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </td>
-                    `;
-                    
-                    playlistTable.appendChild(row);
-                });
-
-                // Add event listeners to checkboxes
-                document.querySelectorAll('.playlist-item-checkbox').forEach(checkbox => {
-                    checkbox.addEventListener('change', updateSelectAllCheckbox);
-                });
+                isFiltered = true;
+                updatePlaylistTable();
+                updateLinksTable();
             }
 
-            // Render links
-            function renderLinks(items = playlistItems) {
-                linksTable.innerHTML = '';
-                
-                if (items.length === 0) {
-                    linksEmpty.classList.remove('hidden');
-                    return;
-                }
-                
-                linksEmpty.classList.add('hidden');
-                
-                items.forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    row.className = index % 2 === 0 ? 'bg-gray-800' : 'bg-gray-700';
-                    
-                    row.innerHTML = `
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <input type="checkbox" class="links-item-checkbox w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500" data-index="${index}">
-                                <span class="ml-2">${item.name || 'Sem nome'}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 break-all">${item.link}</td>
-                        <td class="px-6 py-4">
-                            <button class="text-blue-400 hover:text-blue-300" onclick="copyItemLink(${index})">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </td>
-                    `;
-                    
-                    linksTable.appendChild(row);
-                });
-
-                // Add event listeners to checkboxes
-                document.querySelectorAll('.links-item-checkbox').forEach(checkbox => {
-                    checkbox.addEventListener('change', updateSelectAllCheckbox);
-                });
+            function clearFilter() {
+                groupFilter.value = '';
+                isFiltered = false;
+                updatePlaylistTable();
+                updateLinksTable();
             }
 
-            // Search functionality
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
+            function showEditModal(item, index) {
+                currentEditingItem = { item, index };
                 
-                if (searchTerm === '') {
-                    renderPlaylist();
-                    renderLinks();
-                    return;
-                }
+                editTitle.value = item.title;
+                editGroup.value = item.group;
+                editLink.value = item.link;
+                editLogo.value = item.logo;
                 
-                const filteredItems = playlistItems.filter(item => 
-                    (item.name && item.name.toLowerCase().includes(searchTerm)) ||
-                    (item.group && item.group.toLowerCase().includes(searchTerm)) ||
-                    (item.link && item.link.toLowerCase().includes(searchTerm))
-                );
-                
-                renderPlaylist(filteredItems);
-                renderLinks(filteredItems);
-            });
-
-            // Sort dropdown toggle
-            sortBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                sortDropdown.classList.toggle('hidden');
-            });
-
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function() {
-                sortDropdown.classList.add('hidden');
-            });
-
-            // Sort by name (A-Z)
-            document.getElementById('sortNameAsc').addEventListener('click', function() {
-                currentSortField = 'name';
-                currentSortDirection = 'asc';
-                sortBtn.innerHTML = '<i class="fas fa-sort-alpha-down mr-2"></i>Nome (A-Z)';
-                sortItems();
-                renderPlaylist();
-                renderLinks();
-                sortDropdown.classList.add('hidden');
-            });
-
-            // Sort by name (Z-A)
-            document.getElementById('sortNameDesc').addEventListener('click', function() {
-                currentSortField = 'name';
-                currentSortDirection = 'desc';
-                sortBtn.innerHTML = '<i class="fas fa-sort-alpha-up mr-2"></i>Nome (Z-A)';
-                sortItems();
-                renderPlaylist();
-                renderLinks();
-                sortDropdown.classList.add('hidden');
-            });
-
-            // Sort by group (A-Z)
-            document.getElementById('sortGroupAsc').addEventListener('click', function() {
-                currentSortField = 'group';
-                currentSortDirection = 'asc';
-                sortBtn.innerHTML = '<i class="fas fa-layer-group mr-2"></i>Grupo (A-Z)';
-                sortItems();
-                renderPlaylist();
-                renderLinks();
-                sortDropdown.classList.add('hidden');
-            });
-
-            // Sort by group (Z-A)
-            document.getElementById('sortGroupDesc').addEventListener('click', function() {
-                currentSortField = 'group';
-                currentSortDirection = 'desc';
-                sortBtn.innerHTML = '<i class="fas fa-layer-group fa-flip-vertical mr-2"></i>Grupo (Z-A)';
-                sortItems();
-                renderPlaylist();
-                renderLinks();
-                sortDropdown.classList.add('hidden');
-            });
-
-            // Mass Edit
-            massEditBtn.addEventListener('click', function() {
-                massEditModal.classList.remove('hidden');
-            });
-
-            closeMassEditBtn.addEventListener('click', function() {
-                massEditModal.classList.add('hidden');
-            });
-
-            cancelMassEditBtn.addEventListener('click', function() {
-                massEditModal.classList.add('hidden');
-            });
-
-            applyMassEditBtn.addEventListener('click', function() {
-                const find = findText.value;
-                const replace = replaceText.value;
-                const applyToNames = document.getElementById('applyToNames').checked;
-                const applyToLinks = document.getElementById('applyToLinks').checked;
-                const applyToGroups = document.getElementById('applyToGroups').checked;
-                const applyToLogos = document.getElementById('applyToLogos').checked;
-                
-                if (find) {
-                    playlistItems.forEach(item => {
-                        if (applyToNames && item.name) {
-                            item.name = item.name.replace(new RegExp(find, 'g'), replace);
-                        }
-                        if (applyToLinks && item.link) {
-                            item.link = item.link.replace(new RegExp(find, 'g'), replace);
-                        }
-                        if (applyToGroups && item.group) {
-                            item.group = item.group.replace(new RegExp(find, 'g'), replace);
-                        }
-                        if (applyToLogos && item.logo) {
-                            item.logo = item.logo.replace(new RegExp(find, 'g'), replace);
-                        }
-                    });
-                    
-                    renderPlaylist();
-                    renderLinks();
-                    massEditModal.classList.add('hidden');
-                    showToast('Edição em massa aplicada com sucesso!');
-                }
-            });
-
-            // Mass Copy
-            massCopyBtn.addEventListener('click', function() {
-                updateMassCopyText();
-                massCopyModal.classList.remove('hidden');
-            });
-
-            closeMassCopyBtn.addEventListener('click', function() {
-                massCopyModal.classList.add('hidden');
-            });
-
-            cancelMassCopyBtn.addEventListener('click', function() {
-                massCopyModal.classList.add('hidden');
-            });
-
-            // Update mass copy text based on selected format
-            document.querySelectorAll('input[name="copyFormat"]').forEach(radio => {
-                radio.addEventListener('change', updateMassCopyText);
-            });
-
-            function updateMassCopyText() {
-                const selectedItems = getSelectedItems();
-                let text = '';
-                
-                if (document.getElementById('copyFormatLinks').checked) {
-                    // Only links
-                    selectedItems.forEach(item => {
-                        text += item.link + '\n';
-                    });
-                } else if (document.getElementById('copyFormatNameLinks').checked) {
-                    // Name + Link
-                    selectedItems.forEach(item => {
-                        text += `${item.name || 'Sem nome'}, ${item.link}\n`;
-                    });
-                } else if (document.getElementById('copyFormatFull').checked) {
-                    // Full format
-                    selectedItems.forEach(item => {
-                        text += `#EXTINF:-1 tvg-name="${item.name || ''}" tvg-logo="${item.logo || ''}" group-title="${item.group || ''}",${item.name || ''}\n`;
-                        text += `${item.link}\n`;
-                    });
-                }
-                
-                massCopyText.value = text;
+                editModalTitle.textContent = `Editar: ${item.title}`;
+                editModal.classList.remove('hidden');
             }
 
-            // Copy to clipboard
-            copyToClipboardBtn.addEventListener('click', function() {
-                massCopyText.select();
-                try {
-                    // Modern approach
-                    navigator.clipboard.writeText(massCopyText.value)
-                        .then(() => {
-                            showToast('Links copiados para a área de transferência!');
-                        })
-                        .catch(err => {
-                            // Fallback for older browsers
-                            document.execCommand('copy');
-                            showToast('Links copiados para a área de transferência!');
-                        });
-                } catch (err) {
-                    // Extra fallback
-                    document.execCommand('copy');
-                    showToast('Links copiados para a área de transferência!');
+            function closeEditModal() {
+                editModal.classList.add('hidden');
+                currentEditingItem = null;
+            }
+
+            function saveEdit() {
+                if (!currentEditingItem) return;
+                
+                const { item, index } = currentEditingItem;
+                const items = isFiltered ? filteredItems : playlistItems;
+                
+                // Check if group has changed and add to uniqueGroups if it's new
+                if (editGroup.value !== item.group) {
+                    uniqueGroups.add(editGroup.value);
+                    updateGroupFilter();
                 }
-            });
+                
+                items[index].title = editTitle.value;
+                items[index].group = editGroup.value;
+                items[index].link = editLink.value;
+                items[index].logo = editLogo.value;
+                
+                // If we're in filtered mode, we need to update the main array too
+                if (isFiltered) {
+                    const mainIndex = playlistItems.findIndex(i => 
+                        i.link === item.link && i.title === item.title
+                    );
+                    
+                    if (mainIndex !== -1) {
+                        playlistItems[mainIndex] = { ...items[index] };
+                    }
+                }
+                
+                updatePlaylistTable();
+                updateLinksTable();
+                closeEditModal();
+            }
 
-            // Select all checkboxes
-            selectAllPlaylist.addEventListener('change', function() {
-                const isChecked = this.checked;
-                document.querySelectorAll('.playlist-item-checkbox').forEach(checkbox => {
-                    checkbox.checked = isChecked;
+            function deleteItem(index) {
+                if (!confirm('Tem certeza que deseja excluir este item?')) return;
+                
+                const items = isFiltered ? filteredItems : playlistItems;
+                const deletedItem = items[index];
+                
+                items.splice(index, 1);
+                
+                // If we're in filtered mode, we need to update the main array too
+                if (isFiltered) {
+                    const mainIndex = playlistItems.findIndex(i => 
+                        i.link === deletedItem.link && i.title === deletedItem.title
+                    );
+                    
+                    if (mainIndex !== -1) {
+                        playlistItems.splice(mainIndex, 1);
+                    }
+                }
+                
+                // Rebuild unique groups
+                rebuildUniqueGroups();
+                
+                updatePlaylistTable();
+                updateLinksTable();
+                updateListInfo();
+            }
+
+            function rebuildUniqueGroups() {
+                uniqueGroups = new Set();
+                playlistItems.forEach(item => {
+                    if (item.group) {
+                        uniqueGroups.add(item.group);
+                    }
                 });
-            });
+                updateGroupFilter();
+            }
 
-            selectAllLinks.addEventListener('change', function() {
-                const isChecked = this.checked;
-                document.querySelectorAll('.links-item-checkbox').forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                });
-            });
+            function selectAllItems() {
+                const items = isFiltered ? filteredItems : playlistItems;
+                items.forEach(item => item.selected = true);
+                updatePlaylistTable();
+                updateLinksTable();
+            }
 
-            // Update "select all" checkbox state
+            function deselectAllItems() {
+                const items = isFiltered ? filteredItems : playlistItems;
+                items.forEach(item => item.selected = false);
+                updatePlaylistTable();
+                updateLinksTable();
+            }
+
+            function toggleSelectAllPlaylist() {
+                const items = isFiltered ? filteredItems : playlistItems;
+                const checked = selectAllHeader.checked;
+                
+                items.forEach(item => item.selected = checked);
+                updatePlaylistTable();
+                updateLinksTable();
+            }
+
+            function toggleSelectAllLinks() {
+                const items = isFiltered ? filteredItems : playlistItems;
+                const checked = selectAllLinksHeader.checked;
+                
+                items.forEach(item => item.selected = checked);
+                updatePlaylistTable();
+                updateLinksTable();
+            }
+
             function updateSelectAllCheckbox() {
-                const activeTab = document.querySelector('.tab-content.active').id;
+                const items = isFiltered ? filteredItems : playlistItems;
                 
-                if (activeTab === 'playlistContent') {
-                    const checkboxes = document.querySelectorAll('.playlist-item-checkbox');
-                    const checkedCount = document.querySelectorAll('.playlist-item-checkbox:checked').length;
-                    selectAllPlaylist.checked = checkboxes.length > 0 && checkedCount === checkboxes.length;
-                } else if (activeTab === 'linksContent') {
-                    const checkboxes = document.querySelectorAll('.links-item-checkbox');
-                    const checkedCount = document.querySelectorAll('.links-item-checkbox:checked').length;
-                    selectAllLinks.checked = checkboxes.length > 0 && checkedCount === checkboxes.length;
+                if (items.length === 0) {
+                    selectAllHeader.checked = false;
+                    selectAllHeader.disabled = true;
+                } else {
+                    selectAllHeader.disabled = false;
+                    const allSelected = items.every(item => item.selected);
+                    const someSelected = items.some(item => item.selected);
+                    
+                    selectAllHeader.checked = allSelected;
+                    selectAllHeader.indeterminate = someSelected && !allSelected;
                 }
             }
 
-            // Get selected items
-            function getSelectedItems() {
-                const activeTab = document.querySelector('.tab-content.active').id;
-                const selectedIndices = [];
+            function updateSelectAllLinksCheckbox() {
+                const items = isFiltered ? filteredItems : playlistItems;
                 
-                if (activeTab === 'playlistContent') {
-                    document.querySelectorAll('.playlist-item-checkbox:checked').forEach(checkbox => {
-                        selectedIndices.push(parseInt(checkbox.dataset.index));
-                    });
-                } else if (activeTab === 'linksContent') {
-                    document.querySelectorAll('.links-item-checkbox:checked').forEach(checkbox => {
-                        selectedIndices.push(parseInt(checkbox.dataset.index));
+                if (items.length === 0) {
+                    selectAllLinksHeader.checked = false;
+                    selectAllLinksHeader.disabled = true;
+                } else {
+                    selectAllLinksHeader.disabled = false;
+                    const allSelected = items.every(item => item.selected);
+                    const someSelected = items.some(item => item.selected);
+                    
+                    selectAllLinksHeader.checked = allSelected;
+                    selectAllLinksHeader.indeterminate = someSelected && !allSelected;
+                }
+            }
+
+            function showBulkEditModal() {
+                const items = isFiltered ? filteredItems : playlistItems;
+                const selectedItems = items.filter(item => item.selected);
+                
+                if (selectedItems.length === 0) {
+                    alert('Selecione pelo menos um item para editar em massa');
+                    return;
+                }
+                
+                selectedItemsCount.textContent = selectedItems.length;
+                bulkEditModal.classList.remove('hidden');
+            }
+
+            function closeBulkEditModal() {
+                bulkEditModal.classList.add('hidden');
+                
+                // Reset checkboxes
+                bulkEditTitleCheck.checked = false;
+                bulkEditGroupCheck.checked = false;
+                bulkEditLinkCheck.checked = false;
+                bulkEditLogoCheck.checked = false;
+            }
+
+            function saveBulkEdit() {
+                const items = isFiltered ? filteredItems : playlistItems;
+                const selectedItems = items.filter(item => item.selected);
+                
+                if (selectedItems.length === 0) return;
+                
+                // Process title edits
+                if (bulkEditTitleCheck.checked) {
+                    const action = document.getElementById('bulkEditTitleAction').value;
+                    const value = document.getElementById('bulkEditTitleValue').value;
+                    
+                    selectedItems.forEach(item => {
+                        switch (action) {
+                            case 'replace':
+                                item.title = value;
+                                break;
+                            case 'prefix':
+                                item.title = value + item.title;
+                                break;
+                            case 'suffix':
+                                item.title = item.title + value;
+                                break;
+                        }
                     });
                 }
                 
-                return selectedIndices.map(index => playlistItems[index]);
-            }
-
-            // Show toast notification
-            function showToast(message) {
-                toastMessage.textContent = message;
-                toast.classList.remove('translate-y-20', 'opacity-0');
+                // Process group edits
+                if (bulkEditGroupCheck.checked) {
+                    const action = document.getElementById('bulkEditGroupAction').value;
+                    const value = document.getElementById('bulkEditGroupValue').value;
+                    
+                    selectedItems.forEach(item => {
+                        switch (action) {
+                            case 'replace':
+                                item.group = value;
+                                break;
+                            case 'prefix':
+                                item.group = value + item.group;
+                                break;
+                            case 'suffix':
+                                item.group = item.group + value;
+                                break;
+                        }
+                    });
+                    
+                    // Update unique groups
+                    rebuildUniqueGroups();
+                }
                 
-                setTimeout(() => {
-                    toast.classList.add('translate-y-20', 'opacity-0');
-                }, 3000);
+                // Process link edits
+                if (bulkEditLinkCheck.checked) {
+                    const action = document.getElementById('bulkEditLinkAction').value;
+                    const value = document.getElementById('bulkEditLinkValue').value;
+                    
+                    selectedItems.forEach(item => {
+                        switch (action) {
+                            case 'replace':
+                                item.link = value;
+                                break;
+                            case 'prefix':
+                                item.link = value + item.link;
+                                break;
+                            case 'suffix':
+                                item.link = item.link + value;
+                                break;
+                            case 'domain':
+                                // Replace domain in URL
+                                try {
+                                    const url = new URL(item.link);
+                                    const newUrl = new URL(item.link);
+                                    newUrl.hostname = value;
+                                    item.link = newUrl.toString();
+                                } catch (e) {
+                                    // If URL parsing fails, just do a simple domain replace
+                                    const domainMatch = item.link.match(/^(https?:\/\/)[^\/]+/);
+                                    if (domainMatch) {
+                                        item.link = item.link.replace(domainMatch[0], `${domainMatch[1]}${value}`);
+                                    }
+                                }
+                                break;
+                        }
+                    });
+                }
+                
+                // Process logo edits
+                if (bulkEditLogoCheck.checked) {
+                    const action = document.getElementById('bulkEditLogoAction').value;
+                    const value = document.getElementById('bulkEditLogoValue').value;
+                    
+                    selectedItems.forEach(item => {
+                        switch (action) {
+                            case 'replace':
+                                item.logo = value;
+                                break;
+                            case 'prefix':
+                                item.logo = value + item.logo;
+                                break;
+                            case 'suffix':
+                                item.logo = item.logo + value;
+                                break;
+                            case 'domain':
+                                // Replace domain in logo URL
+                                if (item.logo) {
+                                    try {
+                                        const url = new URL(item.logo);
+                                        const newUrl = new URL(item.logo);
+                                        newUrl.hostname = value;
+                                        item.logo = newUrl.toString();
+                                    } catch (e) {
+                                        // If URL parsing fails, just do a simple domain replace
+                                        const domainMatch = item.logo.match(/^(https?:\/\/)[^\/]+/);
+                                        if (domainMatch) {
+                                            item.logo = item.logo.replace(domainMatch[0], `${domainMatch[1]}${value}`);
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+                    });
+                }
+                
+                // If we're in filtered mode, we need to update the main array too
+                if (isFiltered) {
+                    selectedItems.forEach(filteredItem => {
+                        const mainIndex = playlistItems.findIndex(item => 
+                            item.link === filteredItem.originalLink && 
+                            item.title === filteredItem.originalTitle
+                        );
+                        
+                        if (mainIndex !== -1) {
+                            playlistItems[mainIndex] = { ...filteredItem };
+                        }
+                    });
+                }
+                
+                updatePlaylistTable();
+                updateLinksTable();
+                closeBulkEditModal();
             }
 
-            // Video modal
-            showVideoBtn.addEventListener('click', function() {
-                videoModal.classList.remove('hidden');
-            });
+            function deleteBulkItems() {
+                const items = isFiltered ? filteredItems : playlistItems;
+                const selectedItems = items.filter(item => item.selected);
+                
+                if (selectedItems.length === 0) {
+                    alert('Selecione pelo menos um item para excluir');
+                    return;
+                }
+                
+                if (!confirm(`Tem certeza que deseja excluir ${selectedItems.length} itens?`)) {
+                    return;
+                }
+                
+                // Remove selected items from the current array
+                const selectedIndices = selectedItems.map(item => items.indexOf(item));
+                for (let i = selectedIndices.length - 1; i >= 0; i--) {
+                    items.splice(selectedIndices[i], 1);
+                }
+                
+                // If we're in filtered mode, we need to update the main array too
+                if (isFiltered) {
+                    selectedItems.forEach(filteredItem => {
+                        const mainIndex = playlistItems.findIndex(item => 
+                            item.link === filteredItem.link && 
+                            item.title === filteredItem.title
+                        );
+                        
+                        if (mainIndex !== -1) {
+                            playlistItems.splice(mainIndex, 1);
+                        }
+                    });
+                }
+                
+                // Rebuild unique groups
+                rebuildUniqueGroups();
+                
+                updatePlaylistTable();
+                updateLinksTable();
+                updateListInfo();
+            }
 
-            closeVideoBtn.addEventListener('click', function() {
-                videoModal.classList.add('hidden');
-            });
+            function showCopySelectedModal() {
+                const items = isFiltered ? filteredItems : playlistItems;
+                const selectedItems = items.filter(item => item.selected);
+                
+                if (selectedItems.length === 0) {
+                    alert('Selecione pelo menos um item para copiar');
+                    return;
+                }
+                
+                // Default to M3U format
+                formatCopyText('m3u');
+                
+                // Show the modal
+                copySelectedModal.classList.remove('hidden');
+            }
 
-            // Export functionality
-            exportBtn.addEventListener('click', function() {
-                updateExportPreview();
-                exportModal.classList.remove('hidden');
-            });
-
-            closeExportBtn.addEventListener('click', function() {
-                exportModal.classList.add('hidden');
-            });
-
-            cancelExportBtn.addEventListener('click', function() {
-                exportModal.classList.add('hidden');
-            });
-
-            // Update export options
-            exportSelected.addEventListener('change', updateExportPreview);
-            includeHeader.addEventListener('change', updateExportPreview);
-
-            function updateExportPreview() {
+            function formatCopyText(format) {
+                const items = isFiltered ? filteredItems : playlistItems;
+                const selectedItems = items.filter(item => item.selected);
+                
+                if (selectedItems.length === 0) return;
+                
+                // Reset button styles
+                copyFormatM3u.classList.remove('bg-green-600', 'hover:bg-green-700');
+                copyFormatM3u.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                copyFormatLinks.classList.remove('bg-green-600', 'hover:bg-green-700');
+                copyFormatLinks.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                copyFormatJson.classList.remove('bg-green-600', 'hover:bg-green-700');
+                copyFormatJson.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                
                 let content = '';
                 
-                // Add M3U header if selected
-                if (includeHeader.checked) {
-                    content += '#EXTM3U\n';
+                switch (format) {
+                    case 'm3u':
+                        // Highlight the active button
+                        copyFormatM3u.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                        copyFormatM3u.classList.add('bg-green-600', 'hover:bg-green-700');
+                        
+                        // Generate M3U content
+                        content = '#EXTM3U\n';
+                        selectedItems.forEach(item => {
+                            let extinf = '#EXTINF:-1';
+                            
+                            if (item.logo) {
+                                extinf += ` tvg-logo="${item.logo}"`;
+                            }
+                            
+                            if (item.group) {
+                                extinf += ` group-title="${item.group}"`;
+                            }
+                            
+                            extinf += `,${item.title}\n`;
+                            content += extinf + item.link + '\n';
+                        });
+                        break;
+                        
+                    case 'links':
+                        // Highlight the active button
+                        copyFormatLinks.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                        copyFormatLinks.classList.add('bg-green-600', 'hover:bg-green-700');
+                        
+                        // Generate links-only content
+                        content = selectedItems.map(item => item.link).join('\n');
+                        break;
+                        
+                    case 'json':
+                        // Highlight the active button
+                        copyFormatJson.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                        copyFormatJson.classList.add('bg-green-600', 'hover:bg-green-700');
+                        
+                        // Generate JSON content
+                        const jsonData = selectedItems.map(item => ({
+                            title: item.title,
+                            group: item.group,
+                            logo: item.logo,
+                            link: item.link
+                        }));
+                        content = JSON.stringify(jsonData, null, 2);
+                        break;
                 }
                 
-                // Get items to export
-                const itemsToExport = exportSelected.checked ? getSelectedItems() : playlistItems;
-                
-                // Generate M3U content
-                itemsToExport.forEach(item => {
-                    content += `#EXTINF:-1 tvg-name="${item.name || ''}" tvg-logo="${item.logo || ''}" group-title="${item.group || ''}",${item.name || ''}\n`;
-                    content += `${item.link}\n`;
-                });
-                
-                exportPreview.value = content;
+                copyTextArea.value = content;
             }
 
-            // Download M3U file
-            downloadM3UBtn.addEventListener('click', function() {
-                const content = exportPreview.value;
-                const filename = exportFileName.value || 'minha_lista.m3u';
+            function closeCopySelectedModal() {
+                copySelectedModal.classList.add('hidden');
+            }
+
+            function copyToClipboard() {
+                copyTextArea.select();
+                document.execCommand('copy');
                 
-                // Create a blob with the content
+                // Show feedback
+                const originalText = copyToClipboardBtn.innerHTML;
+                copyToClipboardBtn.innerHTML = '<i class="fas fa-check mr-1"></i>Copiado!';
+                setTimeout(() => {
+                    copyToClipboardBtn.innerHTML = originalText;
+                }, 1500);
+            }
+
+            function exportM3U() {
+                if (playlistItems.length === 0) {
+                    alert('Não há itens para exportar');
+                    return;
+                }
+                
+                // Add current date to the M3U file
+                const today = new Date();
+                const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+                
+                let content = `#EXTM3U date="${dateStr}"\n`;
+                
+                playlistItems.forEach(item => {
+                    let extinf = '#EXTINF:-1';
+                    
+                    if (item.logo) {
+                        extinf += ` tvg-logo="${item.logo}"`;
+                    }
+                    
+                    if (item.group) {
+                        extinf += ` group-title="${item.group}"`;
+                    }
+                    
+                    extinf += `,${item.title}\n`;
+                    content += extinf + item.link + '\n';
+                });
+                
                 const blob = new Blob([content], { type: 'text/plain' });
-                
-                // Create a download link
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = filename;
-                
-                // Trigger the download
+                a.download = `playlist_${dateStr}.m3u`;
                 document.body.appendChild(a);
                 a.click();
-                
-                // Clean up
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 0);
-                
-                exportModal.classList.add('hidden');
-                showToast('Lista M3U exportada com sucesso!');
-            });
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
 
-            // Global functions
-            window.editItem = function(index) {
-                const item = playlistItems[index];
-                // Implement edit functionality if needed
-                alert(`Editar: ${item.name}`);
-            };
+            // Helper function to escape HTML
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
 
-            window.deleteItem = function(index) {
-                if (confirm('Tem certeza que deseja excluir este item?')) {
-                    playlistItems.splice(index, 1);
-                    renderPlaylist();
-                    renderLinks();
-                }
-            };
-
-            window.copyItemLink = function(index) {
-                const item = playlistItems[index];
-                try {
-                    // Modern approach
-                    navigator.clipboard.writeText(item.link)
-                        .then(() => {
-                            showToast('Link copiado com sucesso!');
-                        })
-                        .catch(err => {
-                            // Fallback for older browsers
-                            const textArea = document.createElement('textarea');
-                            textArea.value = item.link;
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(textArea);
-                            showToast('Link copiado com sucesso!');
-                        });
-                } catch (err) {
-                    // Extra fallback
-                    const textArea = document.createElement('textarea');
-                    textArea.value = item.link;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    showToast('Link copiado com sucesso!');
-                }
-            };
+            // Initialize empty tables
+            updatePlaylistTable();
+            updateLinksTable();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94708fd1e396e125',t:'MTc0ODQ2NDc3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'947a8b5ee47de01b',t:'MTc0ODU2OTQ0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
