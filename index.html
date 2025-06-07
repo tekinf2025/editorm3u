@@ -3,1494 +3,1409 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EditStream - Tekinformática</title>
-    <link rel="icon" href="https://i.imgur.com/3Dz8KBM.png">
+    <title>M3U Manager</title>
+    <link rel="icon" href="https://i.imgur.com/c0lg3vq.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('https://i.imgur.com/zJzb34E.jpeg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .tab-active {
-            border-bottom: 3px solid #3b82f6;
-            color: #3b82f6;
+            font-family: 'Inter', sans-serif;
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #1f2937;
+            background: #f1f1f1;
+            border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #4b5563;
-            border-radius: 4px;
+            background: #1e40af;
+            border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
+            background: #153e75;
         }
-        .tooltip {
-            position: relative;
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
         }
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 120px;
-            background-color: #1f2937;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -60px;
-            opacity: 0;
-            transition: opacity 0.3s;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
+        .slide-in {
+            animation: slideIn 0.3s ease-in-out;
         }
-        .link-cell {
-            max-width: 0;
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .truncate-url {
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            max-width: 100%;
+            display: block;
         }
-        .link-expanded {
-            white-space: normal;
-            word-break: break-all;
+        .card-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
         }
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border-radius: 9999px;
-        }
-        .badge-success {
-            background-color: rgba(16, 185, 129, 0.2);
-            color: #10b981;
-        }
-        .badge-warning {
-            background-color: rgba(245, 158, 11, 0.2);
-            color: #f59e0b;
-        }
-        .badge-danger {
-            background-color: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-        }
-        .logo-preview {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-        }
-        .logo-placeholder {
-            width: 40px;
-            height: 40px;
-            display: flex;
+        .list-view .content-item {
+            display: grid;
+            grid-template-columns: 40px 1fr 120px 120px 120px;
+            gap: 8px;
             align-items: center;
-            justify-content: center;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-            color: #6b7280;
+        }
+        .detail-view .content-item {
+            display: grid;
+            grid-template-columns: 40px 80px 1fr 150px 150px 150px;
+            gap: 8px;
+            align-items: center;
         }
     </style>
 </head>
-<body class="text-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <header class="mb-8">
-            <h1 class="text-4xl font-bold text-center text-blue-500 mb-2">M3U Editor - Tekinformática</h1>
-            <p class="text-center text-gray-400">Gerencie e edite suas listas de reprodução M3U</p>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#1e40af]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <h1 class="ml-2 text-xl font-bold text-gray-900">TEKINFORMÁTICA</h1>
+                </div>
+                <div>
+                    <span class="text-sm text-gray-600">Gerenciador de Conteúdos M3U</span>
+                </div>
+            </div>
         </header>
 
-        <div class="flex flex-col lg:flex-row gap-6">
-            <!-- Import Section -->
-            <div class="bg-gray-800 rounded-lg p-6 shadow-lg lg:w-1/3">
-                <h2 class="text-xl font-semibold mb-4 text-blue-400">Importar Lista M3U</h2>
-                
-                <div class="mb-6">
-                    <div class="flex gap-2">
-                        <button id="importFileBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1">
-                            <i class="fas fa-file-import mr-2"></i>Importar Arquivo
-                        </button>
-                        <input type="file" id="m3uFile" accept=".m3u,.m3u8" class="hidden">
-                        <button id="importUrlBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1">
-                            <i class="fas fa-cloud-download-alt mr-2"></i>Importar URL
-                        </button>
-                    </div>
-                    <p id="fileNameDisplay" class="mt-2 text-sm text-gray-400">Nenhum arquivo selecionado</p>
-                </div>
-
-                <div id="urlInputContainer" class="mb-6 hidden">
-                    <label class="block mb-2 text-sm font-medium">URL M3U</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="m3uUrl" placeholder="https://exemplo.com/lista.m3u" class="flex-1 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <button id="loadUrlBtn" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
-                            <i class="fas fa-download mr-1"></i>Carregar
-                        </button>
-                    </div>
-                </div>
-
-                <div id="listInfoContainer" class="mb-6 p-4 bg-gray-700 rounded-lg hidden">
-                    <h3 class="text-lg font-medium mb-3 text-blue-400">Informações da Lista</h3>
-                    <div class="grid grid-cols-2 gap-2 text-sm">
-                        <div class="text-gray-400">Data de Verificação:</div>
-                        <div id="listVerificationDate" class="font-medium"></div>
-                        <div class="text-gray-400">Status:</div>
-                        <div id="listStatus"></div>
-                        <div class="text-gray-400">Total de Canais:</div>
-                        <div id="totalChannels" class="font-medium"></div>
+        <!-- Main Content -->
+        <main class="flex-grow">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <!-- Dashboard -->
+                <div class="bg-white rounded-lg shadow-sm p-6 mb-6 fade-in">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Dashboard</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-gray-700">Total de Conteúdos</h3>
+                                <span class="text-[#1e40af] font-semibold text-lg" id="total-content-count">0</span>
+                            </div>
+                            <div class="h-40 relative">
+                                <canvas id="total-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-gray-700">Conteúdos por Categoria</h3>
+                                <span class="text-[#1e40af] font-semibold text-lg" id="category-count">0</span>
+                            </div>
+                            <div class="h-40 relative">
+                                <canvas id="category-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-medium text-gray-700">Conteúdos Selecionados</h3>
+                                <span class="text-[#1e40af] font-semibold text-lg" id="selected-count">0</span>
+                            </div>
+                            <div class="h-40 relative">
+                                <canvas id="selected-chart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium mb-3 text-blue-400">Filtrar por Grupo</h3>
-                    <div class="mb-4">
-                        <select id="groupFilter" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">Todos os Grupos</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-2">
-                        <button id="clearFilterBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded flex-1">
-                            <i class="fas fa-times mr-2"></i>Limpar Filtro
-                        </button>
-                        <button id="applyFilterBtn" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded flex-1">
-                            <i class="fas fa-filter mr-2"></i>Aplicar Filtro
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium mb-3 text-blue-400">Ações em Massa</h3>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="selectAllBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 rounded text-sm">
-                            <i class="fas fa-check-square mr-1"></i>Selecionar Todos
-                        </button>
-                        <button id="deselectAllBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 rounded text-sm">
-                            <i class="fas fa-square mr-1"></i>Desmarcar Todos
-                        </button>
-                        <button id="bulkEditBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 rounded text-sm">
-                            <i class="fas fa-edit mr-1"></i>Editar Selecionados
-                        </button>
-                        <button id="bulkDeleteBtn" class="bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-sm">
-                            <i class="fas fa-trash-alt mr-1"></i>Excluir Selecionados
-                        </button>
-                        <button id="bulkCopyBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded text-sm col-span-2">
-                            <i class="fas fa-copy mr-1"></i>Copiar Selecionados
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium mb-3 text-blue-400">Exportar</h3>
-                    <button id="exportBtn" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
-                        <i class="fas fa-file-export mr-2"></i>Exportar Lista M3U
-                    </button>
-                </div>
-            </div>
-
-            <!-- Main Content Area -->
-            <div class="flex-1">
-                <!-- Tabs -->
-                <div class="flex border-b border-gray-700 mb-4">
-                    <button id="playlistTab" class="tab-active py-2 px-4 font-medium text-lg">Biblioteca</button>
-                    <button id="linksTab" class="py-2 px-4 font-medium text-lg text-gray-400">Links Importados</button>
-                </div>
-
-                <!-- Playlist Tab Content -->
-                <div id="playlistContent" class="bg-gray-800 rounded-lg p-6 shadow-lg">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold text-blue-400">Biblioteca</h2>
-                        <div class="flex gap-2">
-                            <div class="relative">
-                                <button id="sortBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-sm flex items-center">
-                                    <i class="fas fa-sort mr-1"></i>Ordenar
-                                    <i class="fas fa-chevron-down ml-1"></i>
-                                </button>
-                                <div id="sortDropdown" class="absolute right-0 mt-1 w-48 bg-gray-700 rounded-md shadow-lg z-10 hidden">
-                                    <ul class="py-1 text-sm">
-                                        <li><a href="#" id="sortAlphaAsc" class="block px-4 py-2 hover:bg-gray-600">Título (A-Z)</a></li>
-                                        <li><a href="#" id="sortAlphaDesc" class="block px-4 py-2 hover:bg-gray-600">Título (Z-A)</a></li>
-                                        <li><a href="#" id="sortGroupAsc" class="block px-4 py-2 hover:bg-gray-600">Grupo (A-Z)</a></li>
-                                        <li><a href="#" id="sortGroupDesc" class="block px-4 py-2 hover:bg-gray-600">Grupo (Z-A)</a></li>
-                                    </ul>
+                <!-- Import/Export Section -->
+                <div class="bg-white rounded-lg shadow-sm p-6 mb-6 slide-in">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Importar / Exportar</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">Importar Conteúdos</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Arquivo .m3u</label>
+                                    <div class="flex">
+                                        <input type="file" id="file-input" accept=".m3u" class="hidden">
+                                        <label for="file-input" class="flex-grow px-4 py-2 bg-gray-100 border border-gray-300 rounded-l-md text-sm text-gray-700 cursor-pointer hover:bg-gray-200 transition">
+                                            Selecionar arquivo
+                                        </label>
+                                        <button id="import-file-btn" class="px-4 py-2 bg-[#1e40af] text-white rounded-r-md hover:bg-[#153e75] transition">
+                                            Importar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">URL</label>
+                                    <div class="flex">
+                                        <input type="url" id="url-input" placeholder="https://exemplo.com/lista.m3u" class="flex-grow px-4 py-2 border border-gray-300 rounded-l-md text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]">
+                                        <button id="import-url-btn" class="px-4 py-2 bg-[#1e40af] text-white rounded-r-md hover:bg-[#153e75] transition">
+                                            Importar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <span id="itemCount" class="bg-gray-700 text-gray-300 py-1 px-3 rounded text-sm">0 itens</span>
                         </div>
-                    </div>
-
-                    <div class="overflow-x-auto custom-scrollbar">
-                        <table class="min-w-full bg-gray-900 rounded-lg">
-                            <thead>
-                                <tr class="bg-gray-800 text-gray-400 text-left text-sm">
-                                    <th class="py-2 px-3 w-10"><input type="checkbox" id="selectAllHeader" class="rounded bg-gray-700 border-gray-600"></th>
-                                    <th class="py-2 px-3">Título</th>
-                                    <th class="py-2 px-3">Grupo</th>
-                                    <th class="py-2 px-3">Link</th>
-                                    <th class="py-2 px-3 w-16">Logo</th>
-                                    <th class="py-2 px-3 w-24">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="playlistTableBody" class="text-sm">
-                                <!-- Playlist items will be added here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="emptyPlaylistMessage" class="text-center py-8 text-gray-400">
-                        <i class="fas fa-file-import text-4xl mb-2"></i>
-                        <p>Importe uma lista M3U para começar</p>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">Exportar Conteúdos</h3>
+                            <div class="space-y-3">
+                                <button id="export-selected-btn" class="w-full px-4 py-2 bg-[#1e40af] text-white rounded-md hover:bg-[#153e75] transition flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Exportar Selecionados (.m3u)
+                                </button>
+                                <button id="copy-selected-btn" class="w-full px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-200 transition flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                    Copiar Selecionados
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Links Tab Content -->
-                <div id="linksContent" class="bg-gray-800 rounded-lg p-6 shadow-lg hidden">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold text-blue-400">Links Importados</h2>
-                        <div class="flex gap-2">
-                            <button id="expandAllLinksBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-sm flex items-center">
-                                <i class="fas fa-expand-alt mr-1"></i>Expandir Links
+                <!-- Tabs -->
+                <div class="bg-white rounded-lg shadow-sm mb-6">
+                    <div class="border-b border-gray-200">
+                        <nav class="flex -mb-px">
+                            <button id="tab-library" class="tab-button active px-6 py-3 border-b-2 border-[#1e40af] text-[#1e40af] font-medium">
+                                Biblioteca de Conteúdos
                             </button>
-                            <span id="linkItemCount" class="bg-gray-700 text-gray-300 py-1 px-3 rounded text-sm">0 itens</span>
+                            <button id="tab-imported" class="tab-button px-6 py-3 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium">
+                                Links Importados
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Content Section -->
+                <div id="content-library" class="tab-content active">
+                    <!-- Filters -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6 slide-in">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                            <h2 class="text-lg font-semibold text-gray-800">Biblioteca de Conteúdos</h2>
+                            <div class="flex space-x-2 mt-2 md:mt-0">
+                                <button id="view-list" class="view-button active p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                    </svg>
+                                </button>
+                                <button id="view-detail" class="view-button p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h7" />
+                                    </svg>
+                                </button>
+                                <button id="view-card" class="view-button p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Nome</label>
+                                <input type="text" id="filter-name" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]" placeholder="Filtrar por nome">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Logo</label>
+                                <input type="text" id="filter-logo" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]" placeholder="Filtrar por logo">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Categoria</label>
+                                <select id="filter-category" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]">
+                                    <option value="">Todas as categorias</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Subcategoria</label>
+                                <select id="filter-subcategory" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]">
+                                    <option value="">Todas as subcategorias</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Ordenar por</label>
+                                <select id="sort-by" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]">
+                                    <option value="name-asc">Nome (A-Z)</option>
+                                    <option value="name-desc">Nome (Z-A)</option>
+                                    <option value="group">Grupo</option>
+                                    <option value="category">Categoria</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end space-x-2">
+                                <button id="select-all-btn" class="px-4 py-2 bg-[#1e40af] text-white rounded-md hover:bg-[#153e75] transition">
+                                    Selecionar Todos
+                                </button>
+                                <button id="deselect-all-btn" class="px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-200 transition">
+                                    Desmarcar Todos
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2">
+                            <button id="edit-selected-btn" class="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Editar Selecionados
+                            </button>
+                            <button id="delete-selected-btn" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Excluir Selecionados
+                            </button>
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto custom-scrollbar">
-                        <table class="min-w-full bg-gray-900 rounded-lg">
-                            <thead>
-                                <tr class="bg-gray-800 text-gray-400 text-left text-sm">
-                                    <th class="py-2 px-3 w-10"><input type="checkbox" id="selectAllLinksHeader" class="rounded bg-gray-700 border-gray-600"></th>
-                                    <th class="py-2 px-3 w-1/3">Título</th>
-                                    <th class="py-2 px-3">Link</th>
-                                    <th class="py-2 px-3 w-24">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="linksTableBody" class="text-sm">
-                                <!-- Links will be added here -->
-                            </tbody>
-                        </table>
+                    <!-- Content List -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <div id="content-list" class="list-view custom-scrollbar overflow-x-auto">
+                            <div class="content-item font-medium text-gray-700 border-b pb-2 mb-2">
+                                <div></div>
+                                <div>Nome</div>
+                                <div>Categoria</div>
+                                <div>Grupo</div>
+                                <div>Ações</div>
+                            </div>
+                            <div id="content-items" class="space-y-2">
+                                <!-- Content items will be populated here -->
+                                <div class="text-center py-8 text-gray-500">
+                                    Nenhum conteúdo carregado. Importe um arquivo .m3u ou URL para começar.
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="emptyLinksMessage" class="text-center py-8 text-gray-400">
-                        <i class="fas fa-link text-4xl mb-2"></i>
-                        <p>Nenhum link importado</p>
+                </div>
+
+                <div id="content-imported" class="tab-content hidden">
+                    <!-- Imported Links -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6 slide-in">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Links Importados</h2>
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Nome</th>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">URL do Conteúdo</th>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">URL do Logo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="imported-links">
+                                    <!-- Imported links will be populated here -->
+                                    <tr>
+                                        <td colspan="3" class="text-center py-8 text-gray-500">
+                                            Nenhum conteúdo selecionado. Selecione itens na Biblioteca para visualizar aqui.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="text-sm text-gray-500">
+                        © 2023 TEKINFORMÁTICA - Gerenciador de Conteúdos M3U
+                    </div>
+                    <div id="status-message" class="text-sm text-gray-600"></div>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- Edit Modal -->
-    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
-            <h2 id="editModalTitle" class="text-xl font-semibold mb-4 text-blue-400">Editar Item</h2>
-            
-            <div class="mb-4">
-                <label class="block mb-1 text-sm font-medium">Título</label>
-                <input type="text" id="editTitle" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            
-            <div class="mb-4">
-                <label class="block mb-1 text-sm font-medium">Grupo</label>
-                <input type="text" id="editGroup" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            
-            <div class="mb-4">
-                <label class="block mb-1 text-sm font-medium">Link</label>
-                <input type="text" id="editLink" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            
-            <div class="mb-4">
-                <label class="block mb-1 text-sm font-medium">Logo URL</label>
-                <input type="text" id="editLogo" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            
-            <div class="flex justify-end gap-2 mt-6">
-                <button id="cancelEditBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">
-                    Cancelar
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Editar Conteúdos</h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
-                <button id="saveEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
-                    Salvar
-                </button>
+            </div>
+            <div id="edit-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                    <input type="text" id="edit-category" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Grupo</label>
+                    <input type="text" id="edit-group" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+                    <input type="text" id="edit-logo" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#1e40af]">
+                </div>
+                <div class="pt-4 border-t border-gray-200 flex justify-end space-x-3">
+                    <button id="cancel-edit" class="px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-200 transition">
+                        Cancelar
+                    </button>
+                    <button id="save-edit" class="px-4 py-2 bg-[#1e40af] text-white rounded-md hover:bg-[#153e75] transition">
+                        Salvar Alterações
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Bulk Edit Modal -->
-    <div id="bulkEditModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
-            <h2 class="text-xl font-semibold mb-4 text-blue-400">Editar em Massa</h2>
-            
-            <div class="mb-4">
-                <div class="flex items-center mb-2">
-                    <input type="checkbox" id="bulkEditTitleCheck" class="mr-2 rounded bg-gray-700 border-gray-600">
-                    <label class="text-sm font-medium">Editar Título</label>
-                </div>
-                <div class="flex gap-2">
-                    <select id="bulkEditTitleAction" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="replace">Substituir</option>
-                        <option value="prefix">Adicionar Prefixo</option>
-                        <option value="suffix">Adicionar Sufixo</option>
-                    </select>
-                    <input type="text" id="bulkEditTitleValue" placeholder="Valor" class="flex-1 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-            
-            <div class="mb-4">
-                <div class="flex items-center mb-2">
-                    <input type="checkbox" id="bulkEditGroupCheck" class="mr-2 rounded bg-gray-700 border-gray-600">
-                    <label class="text-sm font-medium">Editar Grupo</label>
-                </div>
-                <div class="flex gap-2">
-                    <select id="bulkEditGroupAction" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="replace">Substituir</option>
-                        <option value="prefix">Adicionar Prefixo</option>
-                        <option value="suffix">Adicionar Sufixo</option>
-                    </select>
-                    <input type="text" id="bulkEditGroupValue" placeholder="Valor" class="flex-1 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-            
-            <div class="mb-4">
-                <div class="flex items-center mb-2">
-                    <input type="checkbox" id="bulkEditLinkCheck" class="mr-2 rounded bg-gray-700 border-gray-600">
-                    <label class="text-sm font-medium">Editar Link</label>
-                </div>
-                <div class="flex gap-2">
-                    <select id="bulkEditLinkAction" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="replace">Substituir</option>
-                        <option value="prefix">Adicionar Prefixo</option>
-                        <option value="suffix">Adicionar Sufixo</option>
-                        <option value="domain">Mudar Domínio</option>
-                    </select>
-                    <input type="text" id="bulkEditLinkValue" placeholder="Valor" class="flex-1 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-            
-            <div class="mb-4">
-                <div class="flex items-center mb-2">
-                    <input type="checkbox" id="bulkEditLogoCheck" class="mr-2 rounded bg-gray-700 border-gray-600">
-                    <label class="text-sm font-medium">Editar Logo</label>
-                </div>
-                <div class="flex gap-2">
-                    <select id="bulkEditLogoAction" class="bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="replace">Substituir</option>
-                        <option value="prefix">Adicionar Prefixo</option>
-                        <option value="suffix">Adicionar Sufixo</option>
-                        <option value="domain">Mudar Domínio</option>
-                    </select>
-                    <input type="text" id="bulkEditLogoValue" placeholder="Valor" class="flex-1 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-            
-            <div class="flex justify-end gap-2 mt-6">
-                <button id="cancelBulkEditBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">
-                    Cancelar
-                </button>
-                <button id="saveBulkEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
-                    Aplicar a <span id="selectedItemsCount">0</span> itens
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Copy Selected Modal -->
-    <div id="copySelectedModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
-            <h2 class="text-xl font-semibold mb-4 text-blue-400">Copiar Selecionados</h2>
-            
-            <div class="mb-4">
-                <label class="block mb-2 text-sm font-medium">Formato</label>
-                <div class="flex gap-2 mb-4">
-                    <button id="copyFormatM3u" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1">
-                        <i class="fas fa-file-alt mr-1"></i>M3U
-                    </button>
-                    <button id="copyFormatLinks" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1">
-                        <i class="fas fa-link mr-1"></i>Apenas Links
-                    </button>
-                    <button id="copyFormatJson" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1">
-                        <i class="fas fa-code mr-1"></i>JSON
-                    </button>
-                </div>
-                
-                <textarea id="copyTextArea" class="w-full h-64 bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono" readonly></textarea>
-            </div>
-            
-            <div class="flex justify-end gap-2 mt-6">
-                <button id="closeCopyModalBtn" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded">
-                    Fechar
-                </button>
-                <button id="copyToClipboardBtn" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded">
-                    <i class="fas fa-copy mr-1"></i>Copiar para Área de Transferência
-                </button>
-            </div>
-        </div>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-md shadow-lg transform transition-transform duration-300 translate-y-20 opacity-0 flex items-center">
+        <span id="toast-message">Mensagem de notificação</span>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Data storage
-            let playlistItems = [];
-            let filteredItems = [];
-            let currentEditingItem = null;
-            let isFiltered = false;
-            let uniqueGroups = new Set();
-            let linksExpanded = false;
-            let lastVerificationDate = null;
+            // State management
+            const state = {
+                contents: [],
+                filteredContents: [],
+                selectedContents: [],
+                currentView: 'list',
+                currentTab: 'library',
+                editingContents: []
+            };
 
             // DOM Elements
-            const fileInput = document.getElementById('m3uFile');
-            const fileNameDisplay = document.getElementById('fileNameDisplay');
-            const urlInput = document.getElementById('m3uUrl');
-            const urlInputContainer = document.getElementById('urlInputContainer');
-            const importFileBtn = document.getElementById('importFileBtn');
-            const importUrlBtn = document.getElementById('importUrlBtn');
-            const loadUrlBtn = document.getElementById('loadUrlBtn');
-            const groupFilter = document.getElementById('groupFilter');
-            const applyFilterBtn = document.getElementById('applyFilterBtn');
-            const clearFilterBtn = document.getElementById('clearFilterBtn');
-            const playlistTab = document.getElementById('playlistTab');
-            const linksTab = document.getElementById('linksTab');
-            const playlistContent = document.getElementById('playlistContent');
-            const linksContent = document.getElementById('linksContent');
-            const playlistTableBody = document.getElementById('playlistTableBody');
-            const linksTableBody = document.getElementById('linksTableBody');
-            const emptyPlaylistMessage = document.getElementById('emptyPlaylistMessage');
-            const emptyLinksMessage = document.getElementById('emptyLinksMessage');
-            const itemCount = document.getElementById('itemCount');
-            const linkItemCount = document.getElementById('linkItemCount');
-            const sortBtn = document.getElementById('sortBtn');
-            const sortDropdown = document.getElementById('sortDropdown');
-            const sortAlphaAsc = document.getElementById('sortAlphaAsc');
-            const sortAlphaDesc = document.getElementById('sortAlphaDesc');
-            const sortGroupAsc = document.getElementById('sortGroupAsc');
-            const sortGroupDesc = document.getElementById('sortGroupDesc');
-            const expandAllLinksBtn = document.getElementById('expandAllLinksBtn');
-            const selectAllBtn = document.getElementById('selectAllBtn');
-            const deselectAllBtn = document.getElementById('deselectAllBtn');
-            const bulkEditBtn = document.getElementById('bulkEditBtn');
-            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-            const bulkCopyBtn = document.getElementById('bulkCopyBtn');
-            const exportBtn = document.getElementById('exportBtn');
-            const selectAllHeader = document.getElementById('selectAllHeader');
-            const selectAllLinksHeader = document.getElementById('selectAllLinksHeader');
-            
-            // List info elements
-            const listInfoContainer = document.getElementById('listInfoContainer');
-            const listVerificationDate = document.getElementById('listVerificationDate');
-            const listStatus = document.getElementById('listStatus');
-            const totalChannels = document.getElementById('totalChannels');
-            
-            // Modals
-            const editModal = document.getElementById('editModal');
-            const editModalTitle = document.getElementById('editModalTitle');
-            const editTitle = document.getElementById('editTitle');
-            const editGroup = document.getElementById('editGroup');
-            const editLink = document.getElementById('editLink');
-            const editLogo = document.getElementById('editLogo');
-            const cancelEditBtn = document.getElementById('cancelEditBtn');
-            const saveEditBtn = document.getElementById('saveEditBtn');
-            
-            const bulkEditModal = document.getElementById('bulkEditModal');
-            const bulkEditTitleCheck = document.getElementById('bulkEditTitleCheck');
-            const bulkEditGroupCheck = document.getElementById('bulkEditGroupCheck');
-            const bulkEditLinkCheck = document.getElementById('bulkEditLinkCheck');
-            const bulkEditLogoCheck = document.getElementById('bulkEditLogoCheck');
-            const selectedItemsCount = document.getElementById('selectedItemsCount');
-            const cancelBulkEditBtn = document.getElementById('cancelBulkEditBtn');
-            const saveBulkEditBtn = document.getElementById('saveBulkEditBtn');
-            
-            // Copy Selected Modal
-            const copySelectedModal = document.getElementById('copySelectedModal');
-            const copyFormatM3u = document.getElementById('copyFormatM3u');
-            const copyFormatLinks = document.getElementById('copyFormatLinks');
-            const copyFormatJson = document.getElementById('copyFormatJson');
-            const copyTextArea = document.getElementById('copyTextArea');
-            const closeCopyModalBtn = document.getElementById('closeCopyModalBtn');
-            const copyToClipboardBtn = document.getElementById('copyToClipboardBtn');
+            const elements = {
+                totalContentCount: document.getElementById('total-content-count'),
+                categoryCount: document.getElementById('category-count'),
+                selectedCount: document.getElementById('selected-count'),
+                contentItems: document.getElementById('content-items'),
+                importedLinks: document.getElementById('imported-links'),
+                fileInput: document.getElementById('file-input'),
+                urlInput: document.getElementById('url-input'),
+                filterName: document.getElementById('filter-name'),
+                filterLogo: document.getElementById('filter-logo'),
+                filterCategory: document.getElementById('filter-category'),
+                filterSubcategory: document.getElementById('filter-subcategory'),
+                sortBy: document.getElementById('sort-by'),
+                contentList: document.getElementById('content-list'),
+                editModal: document.getElementById('edit-modal'),
+                editCategory: document.getElementById('edit-category'),
+                editGroup: document.getElementById('edit-group'),
+                editLogo: document.getElementById('edit-logo'),
+                statusMessage: document.getElementById('status-message'),
+                toast: document.getElementById('toast'),
+                toastMessage: document.getElementById('toast-message')
+            };
+
+            // Charts
+            let totalChart, categoryChart, selectedChart;
+
+            // Initialize charts
+            initCharts();
 
             // Event Listeners
-            fileInput.addEventListener('change', handleFileSelect);
-            importFileBtn.addEventListener('click', () => fileInput.click());
-            importUrlBtn.addEventListener('click', toggleUrlInput);
-            loadUrlBtn.addEventListener('click', handleUrlImport);
-            applyFilterBtn.addEventListener('click', applyFilter);
-            clearFilterBtn.addEventListener('click', clearFilter);
-            playlistTab.addEventListener('click', () => switchTab('playlist'));
-            linksTab.addEventListener('click', () => switchTab('links'));
-            
-            // Sort dropdown
-            sortBtn.addEventListener('click', toggleSortDropdown);
-            sortAlphaAsc.addEventListener('click', () => sortItems('title', 'asc'));
-            sortAlphaDesc.addEventListener('click', () => sortItems('title', 'desc'));
-            sortGroupAsc.addEventListener('click', () => sortItems('group', 'asc'));
-            sortGroupDesc.addEventListener('click', () => sortItems('group', 'desc'));
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(event) {
-                if (!sortBtn.contains(event.target) && !sortDropdown.contains(event.target)) {
-                    sortDropdown.classList.add('hidden');
-                }
-            });
-            
-            expandAllLinksBtn.addEventListener('click', toggleExpandLinks);
-            selectAllBtn.addEventListener('click', selectAllItems);
-            deselectAllBtn.addEventListener('click', deselectAllItems);
-            bulkEditBtn.addEventListener('click', showBulkEditModal);
-            bulkDeleteBtn.addEventListener('click', deleteBulkItems);
-            bulkCopyBtn.addEventListener('click', showCopySelectedModal);
-            exportBtn.addEventListener('click', exportM3U);
-            selectAllHeader.addEventListener('change', toggleSelectAllPlaylist);
-            selectAllLinksHeader.addEventListener('change', toggleSelectAllLinks);
-            
-            cancelEditBtn.addEventListener('click', closeEditModal);
-            saveEditBtn.addEventListener('click', saveEdit);
-            
-            cancelBulkEditBtn.addEventListener('click', closeBulkEditModal);
-            saveBulkEditBtn.addEventListener('click', saveBulkEdit);
-            
-            // Copy Selected Modal
-            copyFormatM3u.addEventListener('click', () => formatCopyText('m3u'));
-            copyFormatLinks.addEventListener('click', () => formatCopyText('links'));
-            copyFormatJson.addEventListener('click', () => formatCopyText('json'));
-            closeCopyModalBtn.addEventListener('click', closeCopySelectedModal);
-            copyToClipboardBtn.addEventListener('click', copyToClipboard);
+            document.getElementById('import-file-btn').addEventListener('click', importFromFile);
+            document.getElementById('import-url-btn').addEventListener('click', importFromUrl);
+            document.getElementById('export-selected-btn').addEventListener('click', exportSelected);
+            document.getElementById('copy-selected-btn').addEventListener('click', copySelected);
+            document.getElementById('select-all-btn').addEventListener('click', selectAll);
+            document.getElementById('deselect-all-btn').addEventListener('click', deselectAll);
+            document.getElementById('edit-selected-btn').addEventListener('click', openEditModal);
+            document.getElementById('delete-selected-btn').addEventListener('click', deleteSelected);
+            document.getElementById('close-modal').addEventListener('click', closeEditModal);
+            document.getElementById('cancel-edit').addEventListener('click', closeEditModal);
+            document.getElementById('save-edit').addEventListener('click', saveEdits);
+
+            // View buttons
+            document.getElementById('view-list').addEventListener('click', () => changeView('list'));
+            document.getElementById('view-detail').addEventListener('click', () => changeView('detail'));
+            document.getElementById('view-card').addEventListener('click', () => changeView('card'));
+
+            // Tab buttons
+            document.getElementById('tab-library').addEventListener('click', () => changeTab('library'));
+            document.getElementById('tab-imported').addEventListener('click', () => changeTab('imported'));
+
+            // Filter inputs
+            elements.filterName.addEventListener('input', applyFilters);
+            elements.filterLogo.addEventListener('input', applyFilters);
+            elements.filterCategory.addEventListener('change', applyFilters);
+            elements.filterSubcategory.addEventListener('change', applyFilters);
+            elements.sortBy.addEventListener('change', applyFilters);
+
+            // Load data from localStorage if available
+            loadFromLocalStorage();
 
             // Functions
-            function toggleUrlInput() {
-                urlInputContainer.classList.toggle('hidden');
-                if (!urlInputContainer.classList.contains('hidden')) {
-                    urlInput.focus();
-                }
-            }
-
-            function handleFileSelect(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    fileNameDisplay.textContent = file.name;
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        parseM3U(e.target.result);
-                    };
-                    reader.readAsText(file);
-                }
-            }
-
-            function handleUrlImport() {
-                const url = urlInput.value.trim();
-                if (!url) {
-                    alert('Por favor, insira uma URL válida');
-                    return;
-                }
-
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Erro ao carregar o arquivo');
+            function initCharts() {
+                // Total Chart
+                const totalCtx = document.getElementById('total-chart').getContext('2d');
+                totalChart = new Chart(totalCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Total', 'Filtrado'],
+                        datasets: [{
+                            data: [0, 0],
+                            backgroundColor: ['#1e40af', '#93c5fd']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
                         }
-                        return response.text();
-                    })
-                    .then(data => {
-                        parseM3U(data);
-                        urlInput.value = '';
-                        urlInputContainer.classList.add('hidden');
-                    })
-                    .catch(error => {
-                        alert('Erro ao importar: ' + error.message);
-                    });
+                    }
+                });
+
+                // Category Chart
+                const categoryCtx = document.getElementById('category-chart').getContext('2d');
+                categoryChart = new Chart(categoryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            data: [],
+                            backgroundColor: []
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+
+                // Selected Chart
+                const selectedCtx = document.getElementById('selected-chart').getContext('2d');
+                selectedChart = new Chart(selectedCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Selecionado', 'Não Selecionado'],
+                        datasets: [{
+                            data: [0, 0],
+                            backgroundColor: ['#22c55e', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateCharts() {
+                // Update Total Chart
+                totalChart.data.datasets[0].data = [
+                    state.contents.length,
+                    Math.max(0, state.contents.length - state.filteredContents.length)
+                ];
+                totalChart.update();
+
+                // Update Category Chart
+                const categories = {};
+                state.contents.forEach(content => {
+                    const category = content.category || 'Sem Categoria';
+                    categories[category] = (categories[category] || 0) + 1;
+                });
+
+                const categoryLabels = Object.keys(categories);
+                const categoryData = Object.values(categories);
+                const categoryColors = generateColors(categoryLabels.length);
+
+                categoryChart.data.labels = categoryLabels;
+                categoryChart.data.datasets[0].data = categoryData;
+                categoryChart.data.datasets[0].backgroundColor = categoryColors;
+                categoryChart.update();
+
+                // Update Selected Chart
+                selectedChart.data.datasets[0].data = [
+                    state.selectedContents.length,
+                    state.contents.length - state.selectedContents.length
+                ];
+                selectedChart.update();
+
+                // Update counters
+                elements.totalContentCount.textContent = state.contents.length;
+                elements.categoryCount.textContent = categoryLabels.length;
+                elements.selectedCount.textContent = state.selectedContents.length;
+            }
+
+            function generateColors(count) {
+                const colors = [];
+                const baseColors = [
+                    '#1e40af', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe',
+                    '#22c55e', '#4ade80', '#86efac', '#bbf7d0',
+                    '#f59e0b', '#fbbf24', '#fcd34d', '#fef3c7'
+                ];
+
+                for (let i = 0; i < count; i++) {
+                    colors.push(baseColors[i % baseColors.length]);
+                }
+
+                return colors;
             }
 
             function parseM3U(content) {
                 const lines = content.split('\n');
+                const items = [];
                 let currentItem = null;
-                
-                playlistItems = [];
-                uniqueGroups = new Set();
-                
-                // Check for verification date in the content
-                checkVerificationDate(content);
-                
+
                 for (let i = 0; i < lines.length; i++) {
                     const line = lines[i].trim();
                     
                     if (line.startsWith('#EXTINF:')) {
-                        // Parse the EXTINF line
+                        // Parse attributes
                         currentItem = {
-                            title: '',
-                            group: '',
+                            name: '',
                             logo: '',
-                            link: '',
-                            selected: false
+                            category: '',
+                            group: '',
+                            url: '',
+                            selected: false,
+                            id: Date.now() + Math.random().toString(36).substring(2, 9)
                         };
-                        
-                        // Extract title
-                        const titleMatch = line.match(/,(.+)$/);
-                        if (titleMatch && titleMatch[1]) {
-                            currentItem.title = titleMatch[1].trim();
-                        }
-                        
-                        // Extract group
-                        const groupMatch = line.match(/group-title="([^"]+)"/);
-                        if (groupMatch && groupMatch[1]) {
+
+                        // Extract tvg-name, tvg-logo, group-title
+                        const nameMatch = line.match(/tvg-name="([^"]*)"/);
+                        const logoMatch = line.match(/tvg-logo="([^"]*)"/);
+                        const groupMatch = line.match(/group-title="([^"]*)"/);
+
+                        if (nameMatch) currentItem.name = nameMatch[1];
+                        if (logoMatch) currentItem.logo = logoMatch[1];
+                        if (groupMatch) {
+                            currentItem.category = groupMatch[1];
                             currentItem.group = groupMatch[1];
-                            uniqueGroups.add(groupMatch[1]);
                         }
-                        
-                        // Extract logo
-                        const logoMatch = line.match(/tvg-logo="([^"]+)"/);
-                        if (logoMatch && logoMatch[1]) {
-                            currentItem.logo = logoMatch[1];
+
+                        // Extract display name (after the comma)
+                        const commaIndex = line.lastIndexOf(',');
+                        if (commaIndex !== -1 && !currentItem.name) {
+                            currentItem.name = line.substring(commaIndex + 1).trim();
                         }
                     } else if (line && !line.startsWith('#') && currentItem) {
-                        // This is the URL line
-                        currentItem.link = line;
-                        playlistItems.push(currentItem);
+                        // This is the URL
+                        currentItem.url = line;
+                        items.push(currentItem);
                         currentItem = null;
                     }
                 }
-                
-                updateGroupFilter();
-                updatePlaylistTable();
-                updateLinksTable();
-                updateListInfo();
-                switchTab('playlist');
+
+                return items;
             }
 
-            function checkVerificationDate(content) {
-                // Look for a verification date in the M3U file
-                // Common formats include:
-                // #EXTM3U date="2023-05-15" or #EXTM3U updated="2023-05-15"
-                const dateMatch = content.match(/#EXTM3U.*(?:date|updated|verification)="([^"]+)"/i);
-                
-                if (dateMatch && dateMatch[1]) {
-                    try {
-                        lastVerificationDate = new Date(dateMatch[1]);
-                    } catch (e) {
-                        lastVerificationDate = null;
-                    }
-                } else {
-                    // If no date found, use current date as import date
-                    lastVerificationDate = new Date();
+            function importFromFile() {
+                const file = elements.fileInput.files[0];
+                if (!file) {
+                    showToast('Por favor, selecione um arquivo .m3u');
+                    return;
                 }
-                
-                // Show the list info container
-                listInfoContainer.classList.remove('hidden');
-            }
 
-            function updateListInfo() {
-                if (lastVerificationDate) {
-                    // Format the date
-                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                    listVerificationDate.textContent = lastVerificationDate.toLocaleDateString('pt-BR', options);
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    const newItems = parseM3U(content);
                     
-                    // Calculate days since verification
-                    const daysSinceVerification = Math.floor((new Date() - lastVerificationDate) / (1000 * 60 * 60 * 24));
-                    
-                    // Set status based on days since verification
-                    if (daysSinceVerification <= 3) {
-                        listStatus.innerHTML = '<span class="badge badge-success">Atualizada</span>';
-                    } else if (daysSinceVerification <= 7) {
-                        listStatus.innerHTML = '<span class="badge badge-warning">Moderada</span>';
+                    if (newItems.length > 0) {
+                        state.contents = [...state.contents, ...newItems];
+                        saveToLocalStorage();
+                        updateFilters();
+                        applyFilters();
+                        showToast(`${newItems.length} conteúdos importados com sucesso`);
                     } else {
-                        listStatus.innerHTML = '<span class="badge badge-danger">Desatualizada</span>';
+                        showToast('Nenhum conteúdo válido encontrado no arquivo');
                     }
-                } else {
-                    listVerificationDate.textContent = "Não disponível";
-                    listStatus.innerHTML = '<span class="badge badge-warning">Desconhecido</span>';
+                };
+                reader.readAsText(file);
+            }
+
+            function importFromUrl() {
+                const url = elements.urlInput.value.trim();
+                if (!url) {
+                    showToast('Por favor, insira uma URL válida');
+                    return;
                 }
-                
-                // Update total channels
-                totalChannels.textContent = playlistItems.length;
-            }
 
-            function updateGroupFilter() {
-                // Clear existing options
-                groupFilter.innerHTML = '<option value="">Todos os Grupos</option>';
+                showToast('Importando conteúdos da URL...');
                 
-                // Add sorted group options
-                [...uniqueGroups].sort().forEach(group => {
-                    const option = document.createElement('option');
-                    option.value = group;
-                    option.textContent = group;
-                    groupFilter.appendChild(option);
-                });
-            }
-
-            function updatePlaylistTable() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                playlistTableBody.innerHTML = '';
-                
-                if (items.length === 0) {
-                    emptyPlaylistMessage.classList.remove('hidden');
-                } else {
-                    emptyPlaylistMessage.classList.add('hidden');
-                    
-                    items.forEach((item, index) => {
-                        const row = document.createElement('tr');
-                        row.className = index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800';
+                // Using a CORS proxy for demonstration
+                // In a real application, you would handle this server-side
+                fetch(`https://cors-anywhere.herokuapp.com/${url}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Falha ao acessar a URL');
+                        }
+                        return response.text();
+                    })
+                    .then(content => {
+                        const newItems = parseM3U(content);
                         
-                        // Create logo element
-                        let logoElement = '';
-                        if (item.logo) {
-                            logoElement = `
-                                <img src="${escapeHtml(item.logo)}" alt="Logo" class="logo-preview" 
-                                    onerror="this.onerror=null; this.innerHTML='<i class=\'fas fa-image\'></i>'; this.classList.add('logo-placeholder');">
-                            `;
+                        if (newItems.length > 0) {
+                            state.contents = [...state.contents, ...newItems];
+                            saveToLocalStorage();
+                            updateFilters();
+                            applyFilters();
+                            showToast(`${newItems.length} conteúdos importados com sucesso`);
                         } else {
-                            logoElement = `
-                                <div class="logo-placeholder">
-                                    <i class="fas fa-image"></i>
-                                </div>
-                            `;
+                            showToast('Nenhum conteúdo válido encontrado na URL');
                         }
-                        
-                        // Create link cell with truncation
-                        const linkCell = `
-                            <div class="flex items-center">
-                                <span class="link-cell" title="${escapeHtml(item.link)}">${escapeHtml(item.link)}</span>
-                                <button class="copy-link-btn ml-2 bg-blue-600 hover:bg-blue-700 text-white p-1 rounded tooltip" 
-                                    data-link="${escapeHtml(item.link)}">
-                                    <i class="fas fa-copy"></i>
-                                    <span class="tooltiptext">Copiar</span>
-                                </button>
-                            </div>
-                        `;
-                        
-                        row.innerHTML = `
-                            <td class="py-2 px-3">
-                                <input type="checkbox" class="item-checkbox rounded bg-gray-700 border-gray-600" 
-                                    data-index="${index}" ${item.selected ? 'checked' : ''}>
-                            </td>
-                            <td class="py-2 px-3">${escapeHtml(item.title)}</td>
-                            <td class="py-2 px-3">${escapeHtml(item.group)}</td>
-                            <td class="py-2 px-3">${linkCell}</td>
-                            <td class="py-2 px-3 text-center">${logoElement}</td>
-                            <td class="py-2 px-3">
-                                <div class="flex space-x-1">
-                                    <button class="edit-btn bg-yellow-600 hover:bg-yellow-700 text-white p-1 rounded tooltip" data-index="${index}">
-                                        <i class="fas fa-edit"></i>
-                                        <span class="tooltiptext">Editar</span>
-                                    </button>
-                                    <button class="delete-btn bg-red-600 hover:bg-red-700 text-white p-1 rounded tooltip" data-index="${index}">
-                                        <i class="fas fa-trash-alt"></i>
-                                        <span class="tooltiptext">Excluir</span>
-                                    </button>
-                                </div>
-                            </td>
-                        `;
-                        
-                        playlistTableBody.appendChild(row);
+                    })
+                    .catch(error => {
+                        showToast(`Erro ao importar: ${error.message}`);
                     });
-                    
-                    // Add event listeners to the new buttons
-                    document.querySelectorAll('.edit-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const index = parseInt(this.getAttribute('data-index'));
-                            showEditModal(items[index], index);
-                        });
-                    });
-                    
-                    document.querySelectorAll('.delete-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const index = parseInt(this.getAttribute('data-index'));
-                            deleteItem(index);
-                        });
-                    });
-                    
-                    document.querySelectorAll('.item-checkbox').forEach(checkbox => {
-                        checkbox.addEventListener('change', function() {
-                            const index = parseInt(this.getAttribute('data-index'));
-                            items[index].selected = this.checked;
-                        });
-                    });
-                    
-                    document.querySelectorAll('.copy-link-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const link = this.getAttribute('data-link');
-                            navigator.clipboard.writeText(link).then(() => {
-                                const originalText = this.innerHTML;
-                                this.innerHTML = '<i class="fas fa-check"></i>';
-                                setTimeout(() => {
-                                    this.innerHTML = originalText;
-                                }, 1000);
-                            });
-                        });
-                    });
+            }
+
+            function exportSelected() {
+                if (state.selectedContents.length === 0) {
+                    showToast('Nenhum conteúdo selecionado para exportar');
+                    return;
                 }
-                
-                itemCount.textContent = `${items.length} itens`;
-                updateSelectAllCheckbox();
-            }
 
-            function updateLinksTable() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                linksTableBody.innerHTML = '';
+                let m3uContent = '#EXTM3U\n';
                 
-                if (items.length === 0) {
-                    emptyLinksMessage.classList.remove('hidden');
-                } else {
-                    emptyLinksMessage.classList.add('hidden');
-                    
-                    items.forEach((item, index) => {
-                        const row = document.createElement('tr');
-                        row.className = index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800';
-                        
-                        row.innerHTML = `
-                            <td class="py-2 px-3">
-                                <input type="checkbox" class="link-item-checkbox rounded bg-gray-700 border-gray-600" 
-                                    data-index="${index}" ${item.selected ? 'checked' : ''}>
-                            </td>
-                            <td class="py-2 px-3">${escapeHtml(item.title)}</td>
-                            <td class="py-2 px-3">
-                                <div class="flex items-center">
-                                    <span class="link-text ${linksExpanded ? 'link-expanded' : 'link-cell'}">${escapeHtml(item.link)}</span>
-                                    <button class="copy-btn ml-2 bg-blue-600 hover:bg-blue-700 text-white p-1 rounded tooltip" 
-                                        data-link="${escapeHtml(item.link)}">
-                                        <i class="fas fa-copy"></i>
-                                        <span class="tooltiptext">Copiar</span>
-                                    </button>
-                                </div>
-                            </td>
-                            <td class="py-2 px-3">
-                                <div class="flex space-x-1">
-                                    <button class="edit-link-btn bg-yellow-600 hover:bg-yellow-700 text-white p-1 rounded tooltip" data-index="${index}">
-                                        <i class="fas fa-edit"></i>
-                                        <span class="tooltiptext">Editar</span>
-                                    </button>
-                                    <button class="delete-link-btn bg-red-600 hover:bg-red-700 text-white p-1 rounded tooltip" data-index="${index}">
-                                        <i class="fas fa-trash-alt"></i>
-                                        <span class="tooltiptext">Excluir</span>
-                                    </button>
-                                </div>
-                            </td>
-                        `;
-                        
-                        linksTableBody.appendChild(row);
-                    });
-                    
-                    // Add event listeners to the new buttons
-                    document.querySelectorAll('.copy-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const link = this.getAttribute('data-link');
-                            navigator.clipboard.writeText(link).then(() => {
-                                const originalText = this.innerHTML;
-                                this.innerHTML = '<i class="fas fa-check"></i>';
-                                setTimeout(() => {
-                                    this.innerHTML = originalText;
-                                }, 1000);
-                            });
-                        });
-                    });
-                    
-                    document.querySelectorAll('.edit-link-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const index = parseInt(this.getAttribute('data-index'));
-                            showEditModal(items[index], index);
-                        });
-                    });
-                    
-                    document.querySelectorAll('.delete-link-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const index = parseInt(this.getAttribute('data-index'));
-                            deleteItem(index);
-                        });
-                    });
-                    
-                    document.querySelectorAll('.link-item-checkbox').forEach(checkbox => {
-                        checkbox.addEventListener('change', function() {
-                            const index = parseInt(this.getAttribute('data-index'));
-                            items[index].selected = this.checked;
-                        });
-                    });
-                }
-                
-                linkItemCount.textContent = `${items.length} itens`;
-                updateSelectAllLinksCheckbox();
-                
-                // Update expand button text
-                expandAllLinksBtn.innerHTML = linksExpanded ? 
-                    '<i class="fas fa-compress-alt mr-1"></i>Comprimir Links' : 
-                    '<i class="fas fa-expand-alt mr-1"></i>Expandir Links';
-            }
-
-            function toggleExpandLinks() {
-                linksExpanded = !linksExpanded;
-                updateLinksTable();
-            }
-
-            function toggleSortDropdown() {
-                sortDropdown.classList.toggle('hidden');
-            }
-
-            function sortItems(field, direction) {
-                const items = isFiltered ? filteredItems : playlistItems;
-                
-                items.sort((a, b) => {
-                    if (direction === 'asc') {
-                        return a[field].localeCompare(b[field]);
-                    } else {
-                        return b[field].localeCompare(a[field]);
-                    }
+                state.selectedContents.forEach(content => {
+                    m3uContent += `#EXTINF:-1 tvg-name="${content.name}" tvg-logo="${content.logo}" group-title="${content.category}", ${content.name}\n`;
+                    m3uContent += `${content.url}\n`;
                 });
-                
-                updatePlaylistTable();
-                updateLinksTable();
-                sortDropdown.classList.add('hidden');
-            }
 
-            function switchTab(tab) {
-                if (tab === 'playlist') {
-                    playlistTab.classList.add('tab-active');
-                    playlistTab.classList.remove('text-gray-400');
-                    linksTab.classList.remove('tab-active');
-                    linksTab.classList.add('text-gray-400');
-                    playlistContent.classList.remove('hidden');
-                    linksContent.classList.add('hidden');
-                } else {
-                    linksTab.classList.add('tab-active');
-                    linksTab.classList.remove('text-gray-400');
-                    playlistTab.classList.remove('tab-active');
-                    playlistTab.classList.add('text-gray-400');
-                    linksContent.classList.remove('hidden');
-                    playlistContent.classList.add('hidden');
-                }
-            }
-
-            function applyFilter() {
-                const selectedGroup = groupFilter.value;
-                
-                if (!selectedGroup) {
-                    clearFilter();
-                    return;
-                }
-                
-                filteredItems = playlistItems.filter(item => {
-                    return item.group === selectedGroup;
-                });
-                
-                isFiltered = true;
-                updatePlaylistTable();
-                updateLinksTable();
-            }
-
-            function clearFilter() {
-                groupFilter.value = '';
-                isFiltered = false;
-                updatePlaylistTable();
-                updateLinksTable();
-            }
-
-            function showEditModal(item, index) {
-                currentEditingItem = { item, index };
-                
-                editTitle.value = item.title;
-                editGroup.value = item.group;
-                editLink.value = item.link;
-                editLogo.value = item.logo;
-                
-                editModalTitle.textContent = `Editar: ${item.title}`;
-                editModal.classList.remove('hidden');
-            }
-
-            function closeEditModal() {
-                editModal.classList.add('hidden');
-                currentEditingItem = null;
-            }
-
-            function saveEdit() {
-                if (!currentEditingItem) return;
-                
-                const { item, index } = currentEditingItem;
-                const items = isFiltered ? filteredItems : playlistItems;
-                
-                // Check if group has changed and add to uniqueGroups if it's new
-                if (editGroup.value !== item.group) {
-                    uniqueGroups.add(editGroup.value);
-                    updateGroupFilter();
-                }
-                
-                items[index].title = editTitle.value;
-                items[index].group = editGroup.value;
-                items[index].link = editLink.value;
-                items[index].logo = editLogo.value;
-                
-                // If we're in filtered mode, we need to update the main array too
-                if (isFiltered) {
-                    const mainIndex = playlistItems.findIndex(i => 
-                        i.link === item.link && i.title === item.title
-                    );
-                    
-                    if (mainIndex !== -1) {
-                        playlistItems[mainIndex] = { ...items[index] };
-                    }
-                }
-                
-                updatePlaylistTable();
-                updateLinksTable();
-                closeEditModal();
-            }
-
-            function deleteItem(index) {
-                if (!confirm('Tem certeza que deseja excluir este item?')) return;
-                
-                const items = isFiltered ? filteredItems : playlistItems;
-                const deletedItem = items[index];
-                
-                items.splice(index, 1);
-                
-                // If we're in filtered mode, we need to update the main array too
-                if (isFiltered) {
-                    const mainIndex = playlistItems.findIndex(i => 
-                        i.link === deletedItem.link && i.title === deletedItem.title
-                    );
-                    
-                    if (mainIndex !== -1) {
-                        playlistItems.splice(mainIndex, 1);
-                    }
-                }
-                
-                // Rebuild unique groups
-                rebuildUniqueGroups();
-                
-                updatePlaylistTable();
-                updateLinksTable();
-                updateListInfo();
-            }
-
-            function rebuildUniqueGroups() {
-                uniqueGroups = new Set();
-                playlistItems.forEach(item => {
-                    if (item.group) {
-                        uniqueGroups.add(item.group);
-                    }
-                });
-                updateGroupFilter();
-            }
-
-            function selectAllItems() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                items.forEach(item => item.selected = true);
-                updatePlaylistTable();
-                updateLinksTable();
-            }
-
-            function deselectAllItems() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                items.forEach(item => item.selected = false);
-                updatePlaylistTable();
-                updateLinksTable();
-            }
-
-            function toggleSelectAllPlaylist() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                const checked = selectAllHeader.checked;
-                
-                items.forEach(item => item.selected = checked);
-                updatePlaylistTable();
-                updateLinksTable();
-            }
-
-            function toggleSelectAllLinks() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                const checked = selectAllLinksHeader.checked;
-                
-                items.forEach(item => item.selected = checked);
-                updatePlaylistTable();
-                updateLinksTable();
-            }
-
-            function updateSelectAllCheckbox() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                
-                if (items.length === 0) {
-                    selectAllHeader.checked = false;
-                    selectAllHeader.disabled = true;
-                } else {
-                    selectAllHeader.disabled = false;
-                    const allSelected = items.every(item => item.selected);
-                    const someSelected = items.some(item => item.selected);
-                    
-                    selectAllHeader.checked = allSelected;
-                    selectAllHeader.indeterminate = someSelected && !allSelected;
-                }
-            }
-
-            function updateSelectAllLinksCheckbox() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                
-                if (items.length === 0) {
-                    selectAllLinksHeader.checked = false;
-                    selectAllLinksHeader.disabled = true;
-                } else {
-                    selectAllLinksHeader.disabled = false;
-                    const allSelected = items.every(item => item.selected);
-                    const someSelected = items.some(item => item.selected);
-                    
-                    selectAllLinksHeader.checked = allSelected;
-                    selectAllLinksHeader.indeterminate = someSelected && !allSelected;
-                }
-            }
-
-            function showBulkEditModal() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                const selectedItems = items.filter(item => item.selected);
-                
-                if (selectedItems.length === 0) {
-                    alert('Selecione pelo menos um item para editar em massa');
-                    return;
-                }
-                
-                selectedItemsCount.textContent = selectedItems.length;
-                bulkEditModal.classList.remove('hidden');
-            }
-
-            function closeBulkEditModal() {
-                bulkEditModal.classList.add('hidden');
-                
-                // Reset checkboxes
-                bulkEditTitleCheck.checked = false;
-                bulkEditGroupCheck.checked = false;
-                bulkEditLinkCheck.checked = false;
-                bulkEditLogoCheck.checked = false;
-            }
-
-            function saveBulkEdit() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                const selectedItems = items.filter(item => item.selected);
-                
-                if (selectedItems.length === 0) return;
-                
-                // Process title edits
-                if (bulkEditTitleCheck.checked) {
-                    const action = document.getElementById('bulkEditTitleAction').value;
-                    const value = document.getElementById('bulkEditTitleValue').value;
-                    
-                    selectedItems.forEach(item => {
-                        switch (action) {
-                            case 'replace':
-                                item.title = value;
-                                break;
-                            case 'prefix':
-                                item.title = value + item.title;
-                                break;
-                            case 'suffix':
-                                item.title = item.title + value;
-                                break;
-                        }
-                    });
-                }
-                
-                // Process group edits
-                if (bulkEditGroupCheck.checked) {
-                    const action = document.getElementById('bulkEditGroupAction').value;
-                    const value = document.getElementById('bulkEditGroupValue').value;
-                    
-                    selectedItems.forEach(item => {
-                        switch (action) {
-                            case 'replace':
-                                item.group = value;
-                                break;
-                            case 'prefix':
-                                item.group = value + item.group;
-                                break;
-                            case 'suffix':
-                                item.group = item.group + value;
-                                break;
-                        }
-                    });
-                    
-                    // Update unique groups
-                    rebuildUniqueGroups();
-                }
-                
-                // Process link edits
-                if (bulkEditLinkCheck.checked) {
-                    const action = document.getElementById('bulkEditLinkAction').value;
-                    const value = document.getElementById('bulkEditLinkValue').value;
-                    
-                    selectedItems.forEach(item => {
-                        switch (action) {
-                            case 'replace':
-                                item.link = value;
-                                break;
-                            case 'prefix':
-                                item.link = value + item.link;
-                                break;
-                            case 'suffix':
-                                item.link = item.link + value;
-                                break;
-                            case 'domain':
-                                // Replace domain in URL
-                                try {
-                                    const url = new URL(item.link);
-                                    const newUrl = new URL(item.link);
-                                    newUrl.hostname = value;
-                                    item.link = newUrl.toString();
-                                } catch (e) {
-                                    // If URL parsing fails, just do a simple domain replace
-                                    const domainMatch = item.link.match(/^(https?:\/\/)[^\/]+/);
-                                    if (domainMatch) {
-                                        item.link = item.link.replace(domainMatch[0], `${domainMatch[1]}${value}`);
-                                    }
-                                }
-                                break;
-                        }
-                    });
-                }
-                
-                // Process logo edits
-                if (bulkEditLogoCheck.checked) {
-                    const action = document.getElementById('bulkEditLogoAction').value;
-                    const value = document.getElementById('bulkEditLogoValue').value;
-                    
-                    selectedItems.forEach(item => {
-                        switch (action) {
-                            case 'replace':
-                                item.logo = value;
-                                break;
-                            case 'prefix':
-                                item.logo = value + item.logo;
-                                break;
-                            case 'suffix':
-                                item.logo = item.logo + value;
-                                break;
-                            case 'domain':
-                                // Replace domain in logo URL
-                                if (item.logo) {
-                                    try {
-                                        const url = new URL(item.logo);
-                                        const newUrl = new URL(item.logo);
-                                        newUrl.hostname = value;
-                                        item.logo = newUrl.toString();
-                                    } catch (e) {
-                                        // If URL parsing fails, just do a simple domain replace
-                                        const domainMatch = item.logo.match(/^(https?:\/\/)[^\/]+/);
-                                        if (domainMatch) {
-                                            item.logo = item.logo.replace(domainMatch[0], `${domainMatch[1]}${value}`);
-                                        }
-                                    }
-                                }
-                                break;
-                        }
-                    });
-                }
-                
-                // If we're in filtered mode, we need to update the main array too
-                if (isFiltered) {
-                    selectedItems.forEach(filteredItem => {
-                        const mainIndex = playlistItems.findIndex(item => 
-                            item.link === filteredItem.originalLink && 
-                            item.title === filteredItem.originalTitle
-                        );
-                        
-                        if (mainIndex !== -1) {
-                            playlistItems[mainIndex] = { ...filteredItem };
-                        }
-                    });
-                }
-                
-                updatePlaylistTable();
-                updateLinksTable();
-                closeBulkEditModal();
-            }
-
-            function deleteBulkItems() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                const selectedItems = items.filter(item => item.selected);
-                
-                if (selectedItems.length === 0) {
-                    alert('Selecione pelo menos um item para excluir');
-                    return;
-                }
-                
-                if (!confirm(`Tem certeza que deseja excluir ${selectedItems.length} itens?`)) {
-                    return;
-                }
-                
-                // Remove selected items from the current array
-                const selectedIndices = selectedItems.map(item => items.indexOf(item));
-                for (let i = selectedIndices.length - 1; i >= 0; i--) {
-                    items.splice(selectedIndices[i], 1);
-                }
-                
-                // If we're in filtered mode, we need to update the main array too
-                if (isFiltered) {
-                    selectedItems.forEach(filteredItem => {
-                        const mainIndex = playlistItems.findIndex(item => 
-                            item.link === filteredItem.link && 
-                            item.title === filteredItem.title
-                        );
-                        
-                        if (mainIndex !== -1) {
-                            playlistItems.splice(mainIndex, 1);
-                        }
-                    });
-                }
-                
-                // Rebuild unique groups
-                rebuildUniqueGroups();
-                
-                updatePlaylistTable();
-                updateLinksTable();
-                updateListInfo();
-            }
-
-            function showCopySelectedModal() {
-                const items = isFiltered ? filteredItems : playlistItems;
-                const selectedItems = items.filter(item => item.selected);
-                
-                if (selectedItems.length === 0) {
-                    alert('Selecione pelo menos um item para copiar');
-                    return;
-                }
-                
-                // Default to M3U format
-                formatCopyText('m3u');
-                
-                // Show the modal
-                copySelectedModal.classList.remove('hidden');
-            }
-
-            function formatCopyText(format) {
-                const items = isFiltered ? filteredItems : playlistItems;
-                const selectedItems = items.filter(item => item.selected);
-                
-                if (selectedItems.length === 0) return;
-                
-                // Reset button styles
-                copyFormatM3u.classList.remove('bg-green-600', 'hover:bg-green-700');
-                copyFormatM3u.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                copyFormatLinks.classList.remove('bg-green-600', 'hover:bg-green-700');
-                copyFormatLinks.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                copyFormatJson.classList.remove('bg-green-600', 'hover:bg-green-700');
-                copyFormatJson.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                
-                let content = '';
-                
-                switch (format) {
-                    case 'm3u':
-                        // Highlight the active button
-                        copyFormatM3u.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                        copyFormatM3u.classList.add('bg-green-600', 'hover:bg-green-700');
-                        
-                        // Generate M3U content
-                        content = '#EXTM3U\n';
-                        selectedItems.forEach(item => {
-                            let extinf = '#EXTINF:-1';
-                            
-                            if (item.logo) {
-                                extinf += ` tvg-logo="${item.logo}"`;
-                            }
-                            
-                            if (item.group) {
-                                extinf += ` group-title="${item.group}"`;
-                            }
-                            
-                            extinf += `,${item.title}\n`;
-                            content += extinf + item.link + '\n';
-                        });
-                        break;
-                        
-                    case 'links':
-                        // Highlight the active button
-                        copyFormatLinks.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                        copyFormatLinks.classList.add('bg-green-600', 'hover:bg-green-700');
-                        
-                        // Generate links-only content
-                        content = selectedItems.map(item => item.link).join('\n');
-                        break;
-                        
-                    case 'json':
-                        // Highlight the active button
-                        copyFormatJson.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                        copyFormatJson.classList.add('bg-green-600', 'hover:bg-green-700');
-                        
-                        // Generate JSON content
-                        const jsonData = selectedItems.map(item => ({
-                            title: item.title,
-                            group: item.group,
-                            logo: item.logo,
-                            link: item.link
-                        }));
-                        content = JSON.stringify(jsonData, null, 2);
-                        break;
-                }
-                
-                copyTextArea.value = content;
-            }
-
-            function closeCopySelectedModal() {
-                copySelectedModal.classList.add('hidden');
-            }
-
-            function copyToClipboard() {
-                copyTextArea.select();
-                document.execCommand('copy');
-                
-                // Show feedback
-                const originalText = copyToClipboardBtn.innerHTML;
-                copyToClipboardBtn.innerHTML = '<i class="fas fa-check mr-1"></i>Copiado!';
-                setTimeout(() => {
-                    copyToClipboardBtn.innerHTML = originalText;
-                }, 1500);
-            }
-
-            function exportM3U() {
-                if (playlistItems.length === 0) {
-                    alert('Não há itens para exportar');
-                    return;
-                }
-                
-                // Add current date to the M3U file
-                const today = new Date();
-                const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-                
-                let content = `#EXTM3U date="${dateStr}"\n`;
-                
-                playlistItems.forEach(item => {
-                    let extinf = '#EXTINF:-1';
-                    
-                    if (item.logo) {
-                        extinf += ` tvg-logo="${item.logo}"`;
-                    }
-                    
-                    if (item.group) {
-                        extinf += ` group-title="${item.group}"`;
-                    }
-                    
-                    extinf += `,${item.title}\n`;
-                    content += extinf + item.link + '\n';
-                });
-                
-                const blob = new Blob([content], { type: 'text/plain' });
+                const blob = new Blob([m3uContent], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `playlist_${dateStr}.m3u`;
+                a.download = 'conteudos_exportados.m3u';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+
+                showToast(`${state.selectedContents.length} conteúdos exportados com sucesso`);
             }
 
-            // Helper function to escape HTML
-            function escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
+            
+            
+            
+            
+            function copySelected() {
+    if (state.selectedContents.length === 0) {
+        showToast('Nenhum conteúdo selecionado para copiar');
+        return;
+    }
+
+    const sortBy = elements.sortBy.value;
+    const contentsToCopy = [...state.selectedContents];
+
+    function extractEpisodeParts(name) {
+        const match = name.match(/S(\d+)E(\d+)/i);
+        if (match) {
+            return {
+                season: parseInt(match[1], 10),
+                episode: parseInt(match[2], 10)
+            };
+        }
+        return null;
+    }
+
+    switch (sortBy) {
+        case 'name-asc':
+        case 'name-desc':
+            contentsToCopy.sort((a, b) => {
+                const aEp = extractEpisodeParts(a.name);
+                const bEp = extractEpisodeParts(b.name);
+                if (aEp && bEp) {
+                    if (aEp.season !== bEp.season) {
+                        return aEp.season - bEp.season;
+                    }
+                    return aEp.episode - bEp.episode;
+                }
+                const cmp = a.name.localeCompare(b.name);
+                return sortBy === 'name-desc' ? -cmp : cmp;
+            });
+            break;
+        case 'group':
+            contentsToCopy.sort((a, b) => {
+                const groupA = a.group || '';
+                const groupB = b.group || '';
+                return groupA.localeCompare(groupB) || a.name.localeCompare(b.name);
+            });
+            break;
+        case 'category':
+            contentsToCopy.sort((a, b) => {
+                const catA = a.category || '';
+                const catB = b.category || '';
+                return catA.localeCompare(catB) || a.name.localeCompare(b.name);
+            });
+            break;
+    }
+
+    let m3uContent = '#EXTM3U\n';
+    contentsToCopy.forEach(content => {
+        m3uContent += `#EXTINF:-1 tvg-name="${content.name}" tvg-logo="${content.logo}" group-title="${content.category}", ${content.name}\n`;
+        m3uContent += `${content.url}\n`;
+    });
+
+    navigator.clipboard.writeText(m3uContent)
+        .then(() => {
+            showToast(`${contentsToCopy.length} conteúdos copiados para a área de transferência`);
+        })
+        .catch(err => {
+            showToast('Erro ao copiar para a área de transferência');
+            console.error('Erro ao copiar: ', err);
+        });
+}
+
+
+
+
+            function selectAll() {
+                state.filteredContents.forEach(content => {
+                    const index = state.contents.findIndex(c => c.id === content.id);
+                    if (index !== -1) {
+                        state.contents[index].selected = true;
+                    }
+                });
+                
+                state.selectedContents = state.contents.filter(content => content.selected);
+                saveToLocalStorage();
+                renderContents();
+                renderImportedLinks();
+                updateCharts();
+                showToast(`${state.filteredContents.length} conteúdos selecionados`);
             }
 
-            // Initialize empty tables
-            updatePlaylistTable();
-            updateLinksTable();
+            function deselectAll() {
+                state.contents.forEach(content => {
+                    content.selected = false;
+                });
+                
+                state.selectedContents = [];
+                saveToLocalStorage();
+                renderContents();
+                renderImportedLinks();
+                updateCharts();
+                showToast('Todos os conteúdos desmarcados');
+            }
+
+            function toggleSelection(id) {
+                const index = state.contents.findIndex(content => content.id === id);
+                
+                if (index !== -1) {
+                    state.contents[index].selected = !state.contents[index].selected;
+                    
+                    if (state.contents[index].selected) {
+                        state.selectedContents.push(state.contents[index]);
+                    } else {
+                        state.selectedContents = state.selectedContents.filter(content => content.id !== id);
+                    }
+                    
+                    saveToLocalStorage();
+                    renderContents();
+                    renderImportedLinks();
+                    updateCharts();
+                }
+            }
+
+            function openEditModal() {
+                state.editingContents = state.selectedContents;
+                
+                if (state.editingContents.length === 0) {
+                    showToast('Nenhum conteúdo selecionado para editar');
+                    return;
+                }
+
+                // If all selected items have the same category/group/logo, pre-fill the form
+                const firstItem = state.editingContents[0];
+                const allSameCategory = state.editingContents.every(item => item.category === firstItem.category);
+                const allSameGroup = state.editingContents.every(item => item.group === firstItem.group);
+                const allSameLogo = state.editingContents.every(item => item.logo === firstItem.logo);
+
+                elements.editCategory.value = allSameCategory ? firstItem.category : '';
+                elements.editGroup.value = allSameGroup ? firstItem.group : '';
+                elements.editLogo.value = allSameLogo ? firstItem.logo : '';
+
+                elements.editModal.classList.remove('hidden');
+            }
+
+            function closeEditModal() {
+                elements.editModal.classList.add('hidden');
+                state.editingContents = [];
+            }
+
+            function saveEdits() {
+                if (state.editingContents.length === 0) {
+                    closeEditModal();
+                    return;
+                }
+
+                const newCategory = elements.editCategory.value.trim();
+                const newGroup = elements.editGroup.value.trim();
+                const newLogo = elements.editLogo.value.trim();
+
+                state.editingContents.forEach(editingContent => {
+                    const index = state.contents.findIndex(content => content.id === editingContent.id);
+                    
+                    if (index !== -1) {
+                        if (newCategory) state.contents[index].category = newCategory;
+                        if (newGroup) state.contents[index].group = newGroup;
+                        if (newLogo) state.contents[index].logo = newLogo;
+                    }
+                });
+
+                saveToLocalStorage();
+                updateFilters();
+                applyFilters();
+                closeEditModal();
+                showToast(`${state.editingContents.length} conteúdos atualizados com sucesso`);
+            }
+
+            function deleteSelected() {
+                if (state.selectedContents.length === 0) {
+                    showToast('Nenhum conteúdo selecionado para excluir');
+                    return;
+                }
+
+                const count = state.selectedContents.length;
+                const selectedIds = state.selectedContents.map(content => content.id);
+                
+                state.contents = state.contents.filter(content => !selectedIds.includes(content.id));
+                state.selectedContents = [];
+                
+                saveToLocalStorage();
+                updateFilters();
+                applyFilters();
+                showToast(`${count} conteúdos excluídos com sucesso`);
+            }
+
+            function updateFilters() {
+                // Update category filter
+                const categories = new Set();
+                const subcategories = new Set();
+                
+                state.contents.forEach(content => {
+                    if (content.category) {
+                        categories.add(content.category);
+                    }
+                    if (content.group && content.group !== content.category) {
+                        subcategories.add(content.group);
+                    }
+                });
+
+                // Clear existing options
+                elements.filterCategory.innerHTML = '<option value="">Todas as categorias</option>';
+                elements.filterSubcategory.innerHTML = '<option value="">Todas as subcategorias</option>';
+
+                // Add new options
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    elements.filterCategory.appendChild(option);
+                });
+
+                subcategories.forEach(subcategory => {
+                    const option = document.createElement('option');
+                    option.value = subcategory;
+                    option.textContent = subcategory;
+                    elements.filterSubcategory.appendChild(option);
+                });
+            }
+
+            function applyFilters() {
+                const nameFilter = elements.filterName.value.toLowerCase();
+                const logoFilter = elements.filterLogo.value.toLowerCase();
+                const categoryFilter = elements.filterCategory.value;
+                const subcategoryFilter = elements.filterSubcategory.value;
+                const sortBy = elements.sortBy.value;
+
+                // Apply filters
+                state.filteredContents = state.contents.filter(content => {
+                    const nameMatch = content.name.toLowerCase().includes(nameFilter);
+                    const logoMatch = !logoFilter || (content.logo && content.logo.toLowerCase().includes(logoFilter));
+                    const categoryMatch = !categoryFilter || content.category === categoryFilter;
+                    const subcategoryMatch = !subcategoryFilter || content.group === subcategoryFilter;
+
+                    return nameMatch && logoMatch && categoryMatch && subcategoryMatch;
+                });
+
+                // Apply sorting
+                switch (sortBy) {
+                    case 'name-asc':
+                        state.filteredContents.sort((a, b) => a.name.localeCompare(b.name));
+                        break;
+                    case 'name-desc':
+                        state.filteredContents.sort((a, b) => b.name.localeCompare(a.name));
+                        break;
+                    case 'group':
+                        state.filteredContents.sort((a, b) => {
+                            const groupA = a.group || '';
+                            const groupB = b.group || '';
+                            return groupA.localeCompare(groupB) || a.name.localeCompare(b.name);
+                        });
+                        break;
+                    case 'category':
+                        state.filteredContents.sort((a, b) => {
+                            const catA = a.category || '';
+                            const catB = b.category || '';
+                            return catA.localeCompare(catB) || a.name.localeCompare(b.name);
+                        });
+                        break;
+                }
+
+                renderContents();
+                updateCharts();
+            }
+
+            function renderContents() {
+                if (state.filteredContents.length === 0) {
+                    elements.contentItems.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            ${state.contents.length > 0 ? 'Nenhum conteúdo corresponde aos filtros aplicados.' : 'Nenhum conteúdo carregado. Importe um arquivo .m3u ou URL para começar.'}
+                        </div>
+                    `;
+                    return;
+                }
+
+                elements.contentItems.innerHTML = '';
+
+                // Sort by episode number if possible (for proper sequence)
+                const sortedContents = [...state.filteredContents].sort((a, b) => {
+                    // Try to extract episode numbers (e.g., S01E01)
+                    const epRegex = /S(\d+)E(\d+)/i;
+                    const matchA = a.name.match(epRegex);
+                    const matchB = b.name.match(epRegex);
+                    
+                    if (matchA && matchB) {
+                        const seasonA = parseInt(matchA[1]);
+                        const seasonB = parseInt(matchB[1]);
+                        
+                        if (seasonA !== seasonB) {
+                            return seasonA - seasonB;
+                        }
+                        
+                        const episodeA = parseInt(matchA[2]);
+                        const episodeB = parseInt(matchB[2]);
+                        return episodeA - episodeB;
+                    }
+                    
+                    return 0; // Keep original order if no episode pattern found
+                });
+
+                switch (state.currentView) {
+                    case 'list':
+                        renderListView(sortedContents);
+                        break;
+                    case 'detail':
+                        renderDetailView(sortedContents);
+                        break;
+                    case 'card':
+                        renderCardView(sortedContents);
+                        break;
+                }
+            }
+
+            function renderListView(contents) {
+                elements.contentList.className = 'list-view custom-scrollbar overflow-x-auto';
+                
+                contents.forEach(content => {
+                    const item = document.createElement('div');
+                    item.className = 'content-item py-2 border-b border-gray-100 hover:bg-gray-50 transition';
+                    
+                    item.innerHTML = `
+                        <div>
+                            <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-[#1e40af] focus:ring-[#1e40af]" 
+                                ${content.selected ? 'checked' : ''} data-id="${content.id}">
+                        </div>
+                        <div class="flex items-center">
+                            ${content.logo ? `<img src="${content.logo}" alt="Logo" class="w-6 h-6 mr-2 object-contain">` : ''}
+                            <span class="truncate">${content.name}</span>
+                        </div>
+                        <div class="truncate">${content.category || '-'}</div>
+                        <div class="truncate">${content.group || '-'}</div>
+                        <div class="flex space-x-1">
+                            <button class="copy-btn p-1 text-gray-500 hover:text-[#1e40af]" data-id="${content.id}" title="Copiar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                            <button class="edit-btn p-1 text-gray-500 hover:text-amber-500" data-id="${content.id}" title="Editar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                            <button class="delete-btn p-1 text-gray-500 hover:text-red-500" data-id="${content.id}" title="Excluir">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    
+                    elements.contentItems.appendChild(item);
+                    
+                    // Add event listeners
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', () => toggleSelection(content.id));
+                    
+                    const copyBtn = item.querySelector('.copy-btn');
+                    copyBtn.addEventListener('click', () => copyContentToClipboard(content));
+                    
+                    const editBtn = item.querySelector('.edit-btn');
+                    editBtn.addEventListener('click', () => editSingleContent(content));
+                    
+                    const deleteBtn = item.querySelector('.delete-btn');
+                    deleteBtn.addEventListener('click', () => deleteSingleContent(content.id));
+                });
+            }
+
+            function renderDetailView(contents) {
+                elements.contentList.className = 'detail-view custom-scrollbar overflow-x-auto';
+                
+                contents.forEach(content => {
+                    const item = document.createElement('div');
+                    item.className = 'content-item py-2 border-b border-gray-100 hover:bg-gray-50 transition';
+                    
+                    item.innerHTML = `
+                        <div>
+                            <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-[#1e40af] focus:ring-[#1e40af]" 
+                                ${content.selected ? 'checked' : ''} data-id="${content.id}">
+                        </div>
+                        <div class="flex justify-center">
+                            ${content.logo ? `<img src="${content.logo}" alt="Logo" class="w-10 h-10 object-contain">` : 
+                            '<div class="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center text-gray-400">N/A</div>'}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-medium">${content.name}</span>
+                            <span class="text-xs text-gray-500 truncate-url">${content.url}</span>
+                        </div>
+                        <div class="truncate">${content.category || '-'}</div>
+                        <div class="truncate">${content.group || '-'}</div>
+                        <div class="flex space-x-1">
+                            <button class="copy-btn p-1 text-gray-500 hover:text-[#1e40af]" data-id="${content.id}" title="Copiar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                            <button class="edit-btn p-1 text-gray-500 hover:text-amber-500" data-id="${content.id}" title="Editar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                            <button class="delete-btn p-1 text-gray-500 hover:text-red-500" data-id="${content.id}" title="Excluir">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    
+                    elements.contentItems.appendChild(item);
+                    
+                    // Add event listeners
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', () => toggleSelection(content.id));
+                    
+                    const copyBtn = item.querySelector('.copy-btn');
+                    copyBtn.addEventListener('click', () => copyContentToClipboard(content));
+                    
+                    const editBtn = item.querySelector('.edit-btn');
+                    editBtn.addEventListener('click', () => editSingleContent(content));
+                    
+                    const deleteBtn = item.querySelector('.delete-btn');
+                    deleteBtn.addEventListener('click', () => deleteSingleContent(content.id));
+                });
+            }
+
+            function renderCardView(contents) {
+                elements.contentList.className = 'card-view';
+                
+                contents.forEach(content => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition';
+                    
+                    card.innerHTML = `
+                        <div class="relative">
+                            <div class="absolute top-2 left-2">
+                                <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-[#1e40af] focus:ring-[#1e40af]" 
+                                    ${content.selected ? 'checked' : ''} data-id="${content.id}">
+                            </div>
+                            <div class="h-32 bg-gray-100 flex items-center justify-center">
+                                ${content.logo ? 
+                                    `<img src="${content.logo}" alt="Logo" class="max-h-full max-w-full object-contain">` : 
+                                    `<div class="text-4xl text-gray-300">${content.name.charAt(0)}</div>`
+                                }
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-medium text-gray-800 mb-1 truncate">${content.name}</h3>
+                            <div class="text-xs text-gray-500 mb-2">
+                                <div class="truncate-url">${content.url}</div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
+                                        ${content.category || 'Sem categoria'}
+                                    </span>
+                                </div>
+                                <div class="flex space-x-1">
+                                    <button class="copy-btn p-1 text-gray-500 hover:text-[#1e40af]" data-id="${content.id}" title="Copiar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </button>
+                                    <button class="edit-btn p-1 text-gray-500 hover:text-amber-500" data-id="${content.id}" title="Editar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button class="delete-btn p-1 text-gray-500 hover:text-red-500" data-id="${content.id}" title="Excluir">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    elements.contentItems.appendChild(card);
+                    
+                    // Add event listeners
+                    const checkbox = card.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', () => toggleSelection(content.id));
+                    
+                    const copyBtn = card.querySelector('.copy-btn');
+                    copyBtn.addEventListener('click', () => copyContentToClipboard(content));
+                    
+                    const editBtn = card.querySelector('.edit-btn');
+                    editBtn.addEventListener('click', () => editSingleContent(content));
+                    
+                    const deleteBtn = card.querySelector('.delete-btn');
+                    deleteBtn.addEventListener('click', () => deleteSingleContent(content.id));
+                });
+            }
+
+            function renderImportedLinks() {
+                if (state.selectedContents.length === 0) {
+                    elements.importedLinks.innerHTML = `
+                        <tr>
+                            <td colspan="3" class="text-center py-8 text-gray-500">
+                                Nenhum conteúdo selecionado. Selecione itens na Biblioteca para visualizar aqui.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                elements.importedLinks.innerHTML = '';
+
+                // Sort by episode number if possible (for proper sequence)
+                const sortedContents = [...state.selectedContents].sort((a, b) => {
+                    // Try to extract episode numbers (e.g., S01E01)
+                    const epRegex = /S(\d+)E(\d+)/i;
+                    const matchA = a.name.match(epRegex);
+                    const matchB = b.name.match(epRegex);
+                    
+                    if (matchA && matchB) {
+                        const seasonA = parseInt(matchA[1]);
+                        const seasonB = parseInt(matchB[1]);
+                        
+                        if (seasonA !== seasonB) {
+                            return seasonA - seasonB;
+                        }
+                        
+                        const episodeA = parseInt(matchA[2]);
+                        const episodeB = parseInt(matchB[2]);
+                        return episodeA - episodeB;
+                    }
+                    
+                    return 0; // Keep original order if no episode pattern found
+                });
+
+                sortedContents.forEach(content => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50 transition';
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-3 border-b border-gray-100">
+                            <div class="flex items-center">
+                                ${content.logo ? `<img src="${content.logo}" alt="Logo" class="w-6 h-6 mr-2 object-contain">` : ''}
+                                <span>${content.name}</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 border-b border-gray-100">
+                            <span class="truncate-url">${content.url}</span>
+                        </td>
+                        <td class="px-4 py-3 border-b border-gray-100">
+                            <span class="truncate-url">${content.logo || '-'}</span>
+                        </td>
+                    `;
+                    
+                    elements.importedLinks.appendChild(row);
+                });
+            }
+
+            function copyContentToClipboard(content) {
+                const m3uContent = `#EXTINF:-1 tvg-name="${content.name}" tvg-logo="${content.logo}" group-title="${content.category}", ${content.name}\n${content.url}`;
+                
+                navigator.clipboard.writeText(m3uContent)
+                    .then(() => {
+                        showToast('Conteúdo copiado para a área de transferência');
+                    })
+                    .catch(err => {
+                        showToast('Erro ao copiar para a área de transferência');
+                        console.error('Erro ao copiar: ', err);
+                    });
+            }
+
+            function editSingleContent(content) {
+                state.editingContents = [content];
+                
+                elements.editCategory.value = content.category || '';
+                elements.editGroup.value = content.group || '';
+                elements.editLogo.value = content.logo || '';
+                
+                elements.editModal.classList.remove('hidden');
+            }
+
+            function deleteSingleContent(id) {
+                const index = state.contents.findIndex(content => content.id === id);
+                
+                if (index !== -1) {
+                    const name = state.contents[index].name;
+                    
+                    // Remove from contents
+                    state.contents.splice(index, 1);
+                    
+                    // Remove from selected contents if needed
+                    state.selectedContents = state.selectedContents.filter(content => content.id !== id);
+                    
+                    saveToLocalStorage();
+                    updateFilters();
+                    applyFilters();
+                    showToast(`Conteúdo "${name}" excluído com sucesso`);
+                }
+            }
+
+            function changeView(view) {
+                state.currentView = view;
+                
+                // Update active button
+                document.querySelectorAll('.view-button').forEach(btn => {
+                    btn.classList.remove('active', 'bg-[#1e40af]', 'text-white');
+                    btn.classList.add('bg-gray-100');
+                });
+                
+                document.getElementById(`view-${view}`).classList.add('active', 'bg-[#1e40af]', 'text-white');
+                document.getElementById(`view-${view}`).classList.remove('bg-gray-100');
+                
+                renderContents();
+            }
+
+            function changeTab(tab) {
+                state.currentTab = tab;
+                
+                // Update active tab
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('active', 'border-[#1e40af]', 'text-[#1e40af]');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+                
+                document.getElementById(`tab-${tab}`).classList.add('active', 'border-[#1e40af]', 'text-[#1e40af]');
+                document.getElementById(`tab-${tab}`).classList.remove('border-transparent', 'text-gray-500');
+                
+                // Show/hide content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                
+                document.getElementById(`content-${tab}`).classList.remove('hidden');
+                
+                if (tab === 'imported') {
+                    renderImportedLinks();
+                }
+            }
+
+            function showToast(message) {
+                elements.toastMessage.textContent = message;
+                elements.toast.classList.remove('translate-y-20', 'opacity-0');
+                
+                setTimeout(() => {
+                    elements.toast.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            }
+
+            function saveToLocalStorage() {
+                try {
+                    localStorage.setItem('m3uContents', JSON.stringify(state.contents));
+                    localStorage.setItem('m3uSelectedContents', JSON.stringify(state.selectedContents.map(c => c.id)));
+                    elements.statusMessage.textContent = `Última atualização: ${new Date().toLocaleTimeString()}`;
+                } catch (error) {
+                    console.error('Erro ao salvar no localStorage:', error);
+                    showToast('Erro ao salvar dados localmente. O armazenamento pode estar cheio.');
+                }
+            }
+
+            function loadFromLocalStorage() {
+                try {
+                    const savedContents = localStorage.getItem('m3uContents');
+                    const savedSelectedIds = localStorage.getItem('m3uSelectedContents');
+                    
+                    if (savedContents) {
+                        state.contents = JSON.parse(savedContents);
+                        
+                        if (savedSelectedIds) {
+                            const selectedIds = JSON.parse(savedSelectedIds);
+                            state.selectedContents = state.contents.filter(content => selectedIds.includes(content.id));
+                        }
+                        
+                        updateFilters();
+                        applyFilters();
+                        elements.statusMessage.textContent = `Dados carregados: ${state.contents.length} conteúdos`;
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar do localStorage:', error);
+                }
+            }
+
+            // Initialize demo data if no content exists
+            function initializeDemoData() {
+                if (state.contents.length === 0) {
+                    const demoContents = [
+                        
+                    ];
+                    
+                    state.contents = demoContents;
+                    saveToLocalStorage();
+                    updateFilters();
+                    applyFilters();
+                }
+            }
+
+            // Initialize with demo data
+            initializeDemoData();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'947a8b5ee47de01b',t:'MTc0ODU2OTQ0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94bf93a3956764fd',t:'MTc0OTI5MzMwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
